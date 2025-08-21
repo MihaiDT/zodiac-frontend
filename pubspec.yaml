@@ -1,0 +1,66 @@
+name: zodiac_numerology
+description: "Zodiac & Numerology App with iOS 17/18 design and glassmorphism."
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI & Design
+  cupertino_icons: ^1.0.8
+
+  # State Management
+  hooks_riverpod: ^2.4.9
+  flutter_hooks: ^0.20.5
+
+  # Navigation
+  go_router: ^14.0.2
+
+  # HTTP & API
+  dio: ^5.4.0
+  http: ^1.2.0 # Pentru clientul generat
+
+  # Storage
+  flutter_secure_storage: ^9.0.0
+
+  # JSON & Serialization
+  json_annotation: ^4.8.1
+  freezed_annotation: ^2.4.1
+
+  # Localization
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+  # Testing
+  mockito: ^5.4.4
+  build_runner: ^2.4.7
+
+  # Code Generation
+  json_serializable: ^6.7.1
+  freezed: ^2.4.7
+
+flutter:
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  # assets:
+  #   - images/
+  #   - fonts/
+
+  # fonts:
+  #   - family: SF Pro Display
+  #     fonts:
+  #       - asset: fonts/SFProDisplay-Regular.ttf
+  #       - asset: fonts/SFProDisplay-Medium.ttf
+  #         weight: 500
+  #       - asset: fonts/SFProDisplay-Semibold.ttf
+  #         weight: 600

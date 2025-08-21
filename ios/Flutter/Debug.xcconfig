@@ -1,0 +1,26 @@
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
+#include "Generated.xcconfig"
+
+// Configure for iOS Simulator - NO CODE SIGNING
+CODE_SIGNING_ALLOWED = NO
+CODE_SIGNING_REQUIRED = NO
+CODE_SIGN_IDENTITY = 
+CODE_SIGN_STYLE = Manual
+DEVELOPMENT_TEAM = 
+PROVISIONING_PROFILE_SPECIFIER = 
+
+// Optimize for fast build and hot reload
+GCC_OPTIMIZATION_LEVEL = 0
+SWIFT_OPTIMIZATION_LEVEL = -Onone
+SWIFT_COMPILATION_MODE = incremental
+COMPILER_INDEX_STORE_ENABLE = NO
+DEBUG_INFORMATION_FORMAT = dwarf
+ENABLE_TESTABILITY = YES
+
+// Additional simulator-specific settings
+ONLY_ACTIVE_ARCH = YES
+EXCLUDED_ARCHS[sdk=iphonesimulator*] = arm64
+
+// Skip code signing steps
+SKIP_INSTALL = YES
+STRIP_INSTALLED_PRODUCT = NO

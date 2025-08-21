@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Flutter: Clean & Get Dependencies",
+      "type": "shell",
+      "command": "flutter",
+      "args": ["clean", "&&", "flutter", "pub", "get"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Open Xcode Workspace",
+      "type": "shell",
+      "command": "open",
+      "args": ["ios/Runner.xcworkspace"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "silent"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

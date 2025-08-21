@@ -1,0 +1,21 @@
+{
+  "packageName": "zodiac_api_client",
+  "packageDescription": "Generated API client for Zodiac & Numerology app",
+  "packageCompany": "ZodiacAI",
+  "packageAuthors": "Zodiac Team",
+  "packageVersion": "1.0.0",
+  "dartPackage": true,
+  "browserClient": false,
+  "pubName": "zodiac_api_client",
+  "pubDescription": "Generated API client for Zodiac API",
+  "pubAuthor": "zodiac-team",
+  "pubAuthorEmail": "team@zodiacai.com",
+  "pubHomepage": "https://github.com/MihaiDT/zodiac-frontend",
+  "useEnumExtension": true,
+  "enumUnknownDefaultCase": true,
+  "nullableFields": true,
+  "supportDart2": false,
+  "legacyDiscriminatorBehavior": false,
+  "serialization": "json",
+  "dateLibrary": "core"
+}
