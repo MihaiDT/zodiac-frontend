@@ -31,17 +31,38 @@ class AuthRepository {
       final responseData = await _api.login(requestData);
 
       // Parse the server response structure
-      // Based on the actual API response: {success: true, message: "login successful", data: {user: {...}}}
-      final userData = responseData['data']['user'];
+      // Based on the actual API response: {success: true, message: "login successful", data: {user: {...}, tokens: {...}}}
+      final data = responseData['data'];
+      if (data == null) {
+        throw Exception('Invalid response: missing data field');
+      }
+      
+      final userData = data['user'];
+      final tokensData = data['tokens'];
+      
+      if (userData == null) {
+        throw Exception('Invalid response: missing user data');
+      }
+      
+      if (tokensData == null) {
+        throw Exception('Invalid response: missing tokens data');
+      }
 
-      // Create a mock token since the API doesn't return one
-      // In a real scenario, you'd get this from the API response
-      const mockToken = 'authenticated_user_token';
+      // Extract tokens from the API response
+      final accessToken = tokensData['accessToken'] as String?;
+      final refreshTokenData = tokensData['refreshToken'];
+      final refreshToken = refreshTokenData is String 
+          ? refreshTokenData 
+          : refreshTokenData?['token'] as String?;
 
-      // Create AuthResponse object manually from the server response
+      if (accessToken == null || refreshToken == null) {
+        throw Exception('Invalid response: missing token data');
+      }
+
+      // Create AuthResponse object from the server response
       final authResponse = AuthResponse(
-        accessToken: mockToken,
-        refreshToken: mockToken,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
         user: User.fromJson(userData),
         tokenType: 'Bearer',
       );
@@ -145,13 +166,21 @@ class AuthRepository {
   /// Logout user
   Future<void> logout() async {
     try {
-      // Try to logout on server
-      await _api.logout();
+      // Try to logout on server with a timeout
+      await _api.logout().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          // Timeout - continue with local logout
+          return {};
+        },
+      );
     } catch (e) {
       // Continue with local logout even if server request fails
+      // This ensures the user can always logout locally
+      print('Server logout failed (continuing with local logout): $e');
     }
 
-    // Clear all stored data
+    // Always clear all stored data regardless of server response
     await _clearStoredData();
   }
 
@@ -233,8 +262,9 @@ class AuthRepository {
 
         case DioExceptionType.badResponse:
           final statusCode = e.response?.statusCode;
-          final message =
-              e.response?.data?['message'] ?? 'Authentication failed';
+          final responseData = e.response?.data;
+          final message = responseData?['message'] ?? 'Authentication failed';
+          final errorType = responseData?['error'];
 
           switch (statusCode) {
             case 400:
@@ -247,7 +277,19 @@ class AuthRepository {
               return AuthException('Service not found');
             case 422:
               return ValidationException(message);
+            case 429:
+              final retryAfter = responseData?['details']?['retryAfter'];
+              final waitTime = retryAfter != null ? 
+                '${(retryAfter / 60).ceil()} minutes' : 'a few minutes';
+              return AuthException(
+                'Too many login attempts. Please try again in $waitTime.'
+              );
             case 500:
+              // Handle specific server errors for login
+              if (errorType == 'internal_error' && 
+                  message.toLowerCase().contains('invalid email or password')) {
+                return AuthException('Invalid email or password. Please check your credentials.');
+              }
               return AuthException('Server error. Please try again later.');
             default:
               return AuthException(message);

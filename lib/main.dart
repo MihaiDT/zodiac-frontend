@@ -25,7 +25,7 @@ class Environment {
 
 /// Global provider for the router
 final routerProvider = Provider<GoRouter>((ref) {
-  return AppRouter.createRouter();
+  return AppRouter.createRouter(ref);
 });
 
 void main() async {

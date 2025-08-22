@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,239 +10,192 @@ class LoginScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final emailController = useTextEditingController();
-    final passwordController = useTextEditingController();
-    final isPasswordVisible = useState(false);
-    final rememberMe = useState(false);
-
     final authState = ref.watch(authControllerProvider);
     final authController = ref.read(authControllerProvider.notifier);
-
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
 
     // Listen to auth state changes
     ref.listen(authControllerProvider, (previous, next) {
       if (next.isAuthenticated) {
-        // Navigate to dashboard on successful login
         context.go('/dashboard');
       }
     });
 
-    Future<void> handleLogin() async {
-      if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-        _showErrorDialog(context, 'Please fill in all fields');
-        return;
-      }
-
-      final success = await authController.login(
-        emailController.text.trim(),
-        passwordController.text,
-        rememberMe: rememberMe.value,
-      );
-
-      if (!success && context.mounted) {
-        _showErrorDialog(context, authState.error ?? 'Login failed');
-      }
+    Future<void> handleEmailLogin() async {
+      // Navigate to email login form
+      // For now, just show a placeholder
+      _showEmailLoginDialog(context);
     }
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.primary.withOpacity(0.1),
-              colorScheme.surface,
-              colorScheme.secondary.withOpacity(0.05),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // App Logo/Title
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: colorScheme.primary.withOpacity(0.1),
-                      border: Border.all(
-                        color: colorScheme.primary.withOpacity(0.3),
-                        width: 1,
+      backgroundColor: const Color(
+        0xFFF2F2F7,
+      ), // Light gray background like iOS
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Top section with illustration
+            Expanded(
+              flex: 6,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // App illustration
+                    Container(
+                      width: 200,
+                      height: 200,
+                      child: Image.asset(
+                        'assets/images/login-illustration.png',
+                        fit: BoxFit.contain,
                       ),
                     ),
-                    child: Icon(
-                      CupertinoIcons.star_circle,
-                      size: 60,
-                      color: colorScheme.primary,
+
+                    const SizedBox(height: 40),
+
+                    // App name/title
+                    const Text(
+                      'Zodiac & Numerology',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1D1D1F),
+                        letterSpacing: -0.5,
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 12),
 
-                  Text(
-                    'Welcome Back 🚀',
-                    style: textTheme.headlineLarge?.copyWith(
-                      color: colorScheme.onSurface,
-                      fontWeight: FontWeight.w600,
+                    const Text(
+                      'Discover your cosmic journey',
+                      style: TextStyle(
+                        fontSize: 17,
+                        color: Color(0xFF86868B),
+                        fontWeight: FontWeight.w400,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
+                  ],
+                ),
+              ),
+            ),
 
-                  const SizedBox(height: 8),
-
-                  Text(
-                    'Sign in to your account',
-                    style: textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurface.withOpacity(0.7),
-                    ),
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  // Login Form
-                  Container(
-                    constraints: const BoxConstraints(maxWidth: 400),
-                    child: Column(
-                      children: [
-                        // Email Field
-                        _buildGlassTextField(
-                          controller: emailController,
-                          hintText: 'Email',
-                          keyboardType: TextInputType.emailAddress,
-                          prefixIcon: CupertinoIcons.mail,
-                          textInputAction: TextInputAction.next,
-                          colorScheme: colorScheme,
-                          textTheme: textTheme,
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Password Field
-                        _buildGlassTextField(
-                          controller: passwordController,
-                          hintText: 'Password',
-                          isPassword: true,
-                          isPasswordVisible: isPasswordVisible.value,
-                          onPasswordToggle:
-                              () =>
-                                  isPasswordVisible.value =
-                                      !isPasswordVisible.value,
-                          prefixIcon: CupertinoIcons.lock,
-                          textInputAction: TextInputAction.done,
-                          onSubmitted: (_) => handleLogin(),
-                          colorScheme: colorScheme,
-                          textTheme: textTheme,
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Remember Me & Forgot Password
-                        Row(
-                          children: [
-                            CupertinoButton(
-                              padding: EdgeInsets.zero,
-                              onPressed:
-                                  () => rememberMe.value = !rememberMe.value,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    rememberMe.value
-                                        ? CupertinoIcons
-                                            .check_mark_circled_solid
-                                        : CupertinoIcons.circle,
-                                    size: 20,
-                                    color:
-                                        rememberMe.value
-                                            ? colorScheme.primary
-                                            : colorScheme.onSurface.withOpacity(
-                                              0.5,
-                                            ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Remember me',
-                                    style: textTheme.bodyMedium?.copyWith(
-                                      color: colorScheme.onSurface.withOpacity(
-                                        0.8,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            const Spacer(),
-
-                            CupertinoButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: () {
-                                // TODO: Implement forgot password
-                              },
-                              child: Text(
-                                'Forgot Password?',
-                                style: textTheme.bodyMedium?.copyWith(
-                                  color: colorScheme.primary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Login Button
-                        _buildGlassButton(
-                          onPressed: authState.isLoading ? null : handleLogin,
-                          isLoading: authState.isLoading,
-                          colorScheme: colorScheme,
-                          child: Text(
-                            'Sign In',
-                            style: textTheme.labelLarge?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Register Link
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Don't have an account? ",
-                              style: textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurface.withOpacity(0.7),
-                              ),
-                            ),
-                            CupertinoButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: () => context.go('/register'),
-                              child: Text(
-                                'Sign Up',
-                                style: textTheme.bodyMedium?.copyWith(
-                                  color: colorScheme.primary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+            // Bottom modal section
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x1A000000),
+                    blurRadius: 20,
+                    offset: Offset(0, -5),
                   ),
                 ],
               ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 28,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Handle bar
+                    Container(
+                      width: 36,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD1D1D6),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Sign In title
+                    const Text(
+                      'Sign In',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1D1D1F),
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Sign in with Apple button
+                    _buildAppleSignInButton(),
+
+                    const SizedBox(height: 12),
+
+                    // Sign in with Google button
+                    _buildGoogleSignInButton(),
+
+                    const SizedBox(height: 12),
+
+                    // Continue with email button
+                    _buildEmailSignInButton(handleEmailLogin),
+
+                    const SizedBox(height: 24),
+
+                    // Terms and conditions
+                    const Text(
+                      'By continuing you agree to our\nTerms and Conditions and Privacy Policy',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF86868B),
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppleSignInButton() {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(28),
+          onTap: () {
+            // TODO: Implement Apple Sign In
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.apple, color: Colors.white, size: 24),
+                const SizedBox(width: 12),
+                const Text(
+                  'Sign in with Apple',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -251,127 +203,125 @@ class LoginScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildGlassTextField({
-    required TextEditingController controller,
-    required String hintText,
-    required IconData prefixIcon,
-    required ColorScheme colorScheme,
-    required TextTheme textTheme,
-    TextInputType keyboardType = TextInputType.text,
-    TextInputAction textInputAction = TextInputAction.next,
-    bool isPassword = false,
-    bool isPasswordVisible = false,
-    VoidCallback? onPasswordToggle,
-    Function(String)? onSubmitted,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: colorScheme.surface.withOpacity(0.1),
-        border: Border.all(
-          color: colorScheme.outline.withOpacity(0.2),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        textInputAction: textInputAction,
-        obscureText: isPassword && !isPasswordVisible,
-        onFieldSubmitted: onSubmitted,
-        style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: textTheme.bodyLarge?.copyWith(
-            color: colorScheme.onSurface.withOpacity(0.5),
-          ),
-          prefixIcon: Icon(
-            prefixIcon,
-            color: colorScheme.onSurface.withOpacity(0.6),
-            size: 20,
-          ),
-          suffixIcon:
-              isPassword
-                  ? CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: onPasswordToggle,
-                    child: Icon(
-                      isPasswordVisible
-                          ? CupertinoIcons.eye_slash
-                          : CupertinoIcons.eye,
-                      color: colorScheme.onSurface.withOpacity(0.6),
-                      size: 20,
-                    ),
-                  )
-                  : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGlassButton({
-    required VoidCallback? onPressed,
-    required Widget child,
-    required ColorScheme colorScheme,
-    bool isLoading = false,
-  }) {
+  Widget _buildGoogleSignInButton() {
     return Container(
       width: double.infinity,
       height: 56,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          colors:
-              onPressed != null
-                  ? [colorScheme.primary, colorScheme.secondary]
-                  : [
-                    colorScheme.onSurface.withOpacity(0.3),
-                    colorScheme.onSurface.withOpacity(0.2),
-                  ],
-        ),
-        boxShadow:
-            onPressed != null
-                ? [
-                  BoxShadow(
-                    color: colorScheme.primary.withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 6),
-                  ),
-                ]
-                : null,
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: const Color(0xFFE5E5EA), width: 1),
       ),
-      child: CupertinoButton(
-        padding: EdgeInsets.zero,
-        onPressed: onPressed,
-        child:
-            isLoading
-                ? const CupertinoActivityIndicator(color: Colors.white)
-                : child,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(28),
+          onTap: () {
+            // TODO: Implement Google Sign In
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage(
+                        'https://developers.google.com/identity/images/g-logo.png',
+                      ),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Sign in with Google',
+                  style: TextStyle(
+                    color: Color(0xFF1D1D1F),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  void _showErrorDialog(BuildContext context, String message) {
-    showCupertinoDialog(
+  Widget _buildEmailSignInButton(VoidCallback onTap) {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: const Color(0xFFE5E5EA), width: 1),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(28),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.email_outlined,
+                  color: Color(0xFF1D1D1F),
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Continue with email',
+                  style: TextStyle(
+                    color: Color(0xFF1D1D1F),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showEmailLoginDialog(BuildContext context) {
+    showDialog(
       context: context,
       builder:
-          (context) => CupertinoAlertDialog(
+          (context) => AlertDialog(
+            title: const Text('Email Login'),
+            content: const Text(
+              'Email login functionality will be implemented here',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
             title: const Text('Error'),
             content: Text(message),
             actions: [
-              CupertinoDialogAction(
+              TextButton(
                 onPressed: () => Navigator.of(context).pop(),
                 child: const Text('OK'),
               ),

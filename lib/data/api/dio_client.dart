@@ -32,8 +32,8 @@ class DioClient {
         'Accept': 'application/json',
       },
       validateStatus: (status) {
-        // Accept all status codes to handle them manually
-        return status != null && status < 500;
+        // Accept status codes for manual handling, but allow 401 to trigger interceptor
+        return status != null && status >= 200 && status < 300;
       },
     );
   }

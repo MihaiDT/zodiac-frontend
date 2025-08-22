@@ -116,34 +116,37 @@ class _NavItem extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-        decoration: isSelected
-            ? BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                color: AppTheme.primaryPurple.withOpacity(0.2),
-                border: Border.all(
-                  color: AppTheme.primaryPurple.withOpacity(0.3),
-                  width: 1,
-                ),
-              )
-            : null,
+        decoration:
+            isSelected
+                ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  color: AppTheme.primaryPurple.withOpacity(0.2),
+                  border: Border.all(
+                    color: AppTheme.primaryPurple.withOpacity(0.3),
+                    width: 1,
+                  ),
+                )
+                : null,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
-              color: isSelected
-                  ? AppTheme.primaryPurple
-                  : Colors.white.withOpacity(0.6),
+              color:
+                  isSelected
+                      ? AppTheme.primaryPurple
+                      : Colors.white.withOpacity(0.6),
               size: 22, // Slightly smaller icon
             ),
             const SizedBox(height: 2), // Smaller spacing
             Text(
               label,
               style: TextStyle(
-                color: isSelected
-                    ? AppTheme.primaryPurple
-                    : Colors.white.withOpacity(0.6),
+                color:
+                    isSelected
+                        ? AppTheme.primaryPurple
+                        : Colors.white.withOpacity(0.6),
                 fontSize: 9, // Smaller text
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),

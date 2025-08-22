@@ -145,7 +145,9 @@ class RegisterScreen extends HookConsumerWidget {
 
                   // App Logo/Title
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    width: 120,
+                    height: 120,
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: colorScheme.primary.withOpacity(0.1),
@@ -154,10 +156,11 @@ class RegisterScreen extends HookConsumerWidget {
                         width: 1,
                       ),
                     ),
-                    child: Icon(
-                      CupertinoIcons.star_circle,
-                      size: 60,
-                      color: colorScheme.primary,
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/login-illustration.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
 

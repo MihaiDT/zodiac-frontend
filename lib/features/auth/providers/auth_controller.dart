@@ -77,7 +77,8 @@ class AuthController extends StateNotifier<AuthState> {
 
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      String errorMessage = _formatErrorMessage(e.toString());
+      state = state.copyWith(isLoading: false, error: errorMessage);
       return false;
     }
   }
@@ -121,12 +122,15 @@ class AuthController extends StateNotifier<AuthState> {
     try {
       state = state.copyWith(isLoading: true, error: null);
 
+      // Always attempt logout (repository handles server failures gracefully)
       await _authRepository.logout();
 
+      // Always clear state regardless of server response
       state = const AuthState();
     } catch (e) {
-      // Even if logout fails on server, clear local state
-      state = state.copyWith(error: e.toString(), isLoading: false);
+      // Even if logout fails, always clear local state for security
+      print('Logout error (clearing local state anyway): $e');
+      state = const AuthState();
     }
   }
 
@@ -147,6 +151,41 @@ class AuthController extends StateNotifier<AuthState> {
     } catch (e) {
       // Don't update state on error, keep existing user data
     }
+  }
+
+  /// Format error message for better user experience
+  String _formatErrorMessage(String error) {
+    // Check for rate limiting
+    if (error.contains('rate_limit_exceeded') || error.contains('429')) {
+      return 'Prea multe încercări. Te rog încearcă din nou mai târziu (în ~8 minute).';
+    }
+    
+    // Check for network errors
+    if (error.contains('SocketException') || error.contains('network')) {
+      return 'Problemă de conexiune. Verifică internetul și încearcă din nou.';
+    }
+    
+    // Check for timeout
+    if (error.contains('timeout')) {
+      return 'Conexiunea a expirat. Te rog încearcă din nou.';
+    }
+    
+    // Check for invalid credentials
+    if (error.contains('invalid_credentials') || error.contains('401')) {
+      return 'Email sau parolă incorectă.';
+    }
+    
+    // Check for user not found
+    if (error.contains('user_not_found') || error.contains('404')) {
+      return 'Contul nu a fost găsit. Verifică email-ul sau creează un cont nou.';
+    }
+    
+    // Default error message
+    if (error.contains('Exception:')) {
+      return error.split('Exception:').last.trim();
+    }
+    
+    return error.length > 100 ? 'A apărut o eroare. Te rog încearcă din nou.' : error;
   }
 }
 
