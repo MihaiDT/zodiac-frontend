@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/auth/providers/auth_controller.dart';
+import '../features/onboarding/get_started_screen.dart';
 import '../features/profile/profile_management_screen.dart';
 import '../presentation/shell/app_shell.dart';
 import '../features/common/screens/dashboard_screen.dart';
@@ -17,10 +18,17 @@ import '../features/horoscope/horoscope_screen.dart';
 class AppRouter {
   static GoRouter createRouter(Ref ref) {
     return GoRouter(
-      initialLocation: '/login', // Start with login instead of dashboard
+      initialLocation: '/get-started', // Start with get started screen
       debugLogDiagnostics: true,
 
       routes: [
+        // Onboarding route
+        GoRoute(
+          path: '/get-started',
+          name: 'get-started',
+          builder: (context, state) => const GetStartedScreen(),
+        ),
+
         // Authentication routes (no shell)
         GoRoute(
           path: '/login',
@@ -99,8 +107,8 @@ class AppRouter {
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () => context.go('/login'),
-                    child: const Text('Go to Login'),
+                    onPressed: () => context.go('/get-started'),
+                    child: const Text('Go to Home'),
                   ),
                 ],
               ),
@@ -111,6 +119,7 @@ class AppRouter {
       redirect: (context, state) {
         final isAuthenticated = ref.read(isAuthenticatedProvider);
         final isLoading = ref.read(authLoadingProvider);
+        final isGetStartedRoute = state.fullPath?.startsWith('/get-started') == true;
         final isLoginRoute = state.fullPath?.startsWith('/login') == true ||
                             state.fullPath?.startsWith('/register') == true;
 
@@ -119,13 +128,13 @@ class AppRouter {
           return null;
         }
 
-        // If not authenticated and trying to access protected routes, redirect to login
-        if (!isAuthenticated && !isLoginRoute) {
-          return '/login';
+        // If not authenticated and trying to access protected routes, redirect to get started
+        if (!isAuthenticated && !isLoginRoute && !isGetStartedRoute) {
+          return '/get-started';
         }
 
-        // If authenticated and on login routes, redirect to dashboard
-        if (isAuthenticated && isLoginRoute) {
+        // If authenticated and on auth/onboarding routes, redirect to dashboard
+        if (isAuthenticated && (isLoginRoute || isGetStartedRoute)) {
           return '/dashboard';
         }
 

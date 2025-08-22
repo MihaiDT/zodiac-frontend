@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../main.dart';
@@ -15,6 +16,7 @@ class AuthInterceptor extends Interceptor {
 
   // Flag to prevent infinite refresh loops
   bool _isRefreshing = false;
+  final List<RequestOptions> _failedRequests = [];
 
   AuthInterceptor([this._ref]);
 
@@ -69,12 +71,10 @@ class AuthInterceptor extends Interceptor {
         if (kDebugMode) {
           debugPrint('❌ Token refresh failed: $e');
         }
-      }
-      
-      // If refresh fails or returns null, clear tokens and let the error propagate
-      await _clearTokens();
-      if (kDebugMode) {
-        debugPrint('🗑️ Tokens cleared due to refresh failure');
+        // Clear tokens and redirect to login
+        await _clearTokens();
+        // TODO: Navigate to login screen
+        // ref.read(authProvider.notifier).logout();
       }
     }
 
@@ -115,10 +115,6 @@ class AuthInterceptor extends Interceptor {
         return null;
       }
 
-      if (kDebugMode) {
-        debugPrint('🔄 Attempting to refresh token...');
-      }
-
       // Create a new Dio instance to avoid interceptor loops
       final dio = Dio();
       dio.options.baseUrl = Environment.apiBaseUrl;
@@ -129,15 +125,8 @@ class AuthInterceptor extends Interceptor {
         options: Options(headers: {'Content-Type': 'application/json'}),
       );
 
-      if (kDebugMode) {
-        debugPrint('📥 Refresh response: ${response.statusCode} - ${response.data}');
-      }
-
       if (response.statusCode == 200) {
-        final responseData = response.data as Map<String, dynamic>;
-        
-        // Handle different response structures
-        final data = responseData['data'] ?? responseData;
+        final data = response.data as Map<String, dynamic>;
         final newAccessToken = data['accessToken'] as String?;
         final newRefreshToken = data['refreshToken'] as String?;
 
@@ -160,25 +149,6 @@ class AuthInterceptor extends Interceptor {
             'accessToken': newAccessToken,
             'refreshToken': newRefreshToken,
           };
-        } else {
-          if (kDebugMode) {
-            debugPrint('❌ Missing tokens in refresh response');
-          }
-        }
-      } else {
-        if (kDebugMode) {
-          debugPrint('❌ Refresh failed with status: ${response.statusCode}');
-        }
-      }
-    } on DioException catch (dioError) {
-      if (kDebugMode) {
-        final statusCode = dioError.response?.statusCode;
-        if (statusCode == 401 || statusCode == 403) {
-          debugPrint('❌ Refresh token is invalid or expired (${statusCode})');
-        } else if (statusCode == 500) {
-          debugPrint('❌ Refresh token server error (500) - possibly expired refresh token');
-        } else {
-          debugPrint('❌ Token refresh error: ${dioError.response?.statusCode} - ${dioError.message}');
         }
       }
     } catch (e) {
@@ -237,9 +207,11 @@ class AuthInterceptor extends Interceptor {
     required String accessToken,
     required String refreshToken,
   }) async {
+    const storage = FlutterSecureStorage();
+
     await Future.wait([
-      SecureStorageService.write(key: _accessTokenKey, value: accessToken),
-      SecureStorageService.write(key: _refreshTokenKey, value: refreshToken),
+      storage.write(key: _accessTokenKey, value: accessToken),
+      storage.write(key: _refreshTokenKey, value: refreshToken),
     ]);
 
     if (kDebugMode) {
@@ -249,18 +221,21 @@ class AuthInterceptor extends Interceptor {
 
   /// Get access token from storage
   static Future<String?> getAccessToken() async {
-    return await SecureStorageService.read(key: _accessTokenKey);
+    const storage = FlutterSecureStorage();
+    return await storage.read(key: _accessTokenKey);
   }
 
   /// Get refresh token from storage
   static Future<String?> getRefreshToken() async {
-    return await SecureStorageService.read(key: _refreshTokenKey);
+    const storage = FlutterSecureStorage();
+    return await storage.read(key: _refreshTokenKey);
   }
 
   /// Check if user has valid tokens
   static Future<bool> hasValidTokens() async {
-    final accessToken = await SecureStorageService.read(key: _accessTokenKey);
-    final refreshToken = await SecureStorageService.read(key: _refreshTokenKey);
+    const storage = FlutterSecureStorage();
+    final accessToken = await storage.read(key: _accessTokenKey);
+    final refreshToken = await storage.read(key: _refreshTokenKey);
 
     return accessToken != null &&
         accessToken.isNotEmpty &&
