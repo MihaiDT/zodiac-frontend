@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:math' as math;
+import '../../config/app_colors.dart';
+
+// Data class for zodiac signs
+class ZodiacData {
+  final String symbol;
+  final String imagePath;
+
+  const ZodiacData({required this.symbol, required this.imagePath});
+}
 
 class GetStartedScreen extends StatefulWidget {
   const GetStartedScreen({super.key});
@@ -14,6 +23,58 @@ class _GetStartedScreenState extends State<GetStartedScreen>
   late AnimationController _solarSystemController;
   late AnimationController _starsController;
   late AnimationController _pulseController;
+
+  // Zodiac data with unique mapping - no duplicates, logical order
+  static const List<ZodiacData> _zodiacData = [
+    ZodiacData(
+      symbol: '♈',
+      imagePath: 'assets/images/zodii/Frame.png',
+    ), // Aries - Mar 21 - Apr 19
+    ZodiacData(
+      symbol: '♉',
+      imagePath: 'assets/images/zodii/Frame-1.png',
+    ), // Taurus - Apr 20 - May 20
+    ZodiacData(
+      symbol: '♊',
+      imagePath: 'assets/images/zodii/Frame-2.png',
+    ), // Gemini - May 21 - Jun 20
+    ZodiacData(
+      symbol: '♋',
+      imagePath: 'assets/images/zodii/Frame-3.png',
+    ), // Cancer - Jun 21 - Jul 22
+    ZodiacData(
+      symbol: '♌',
+      imagePath: 'assets/images/zodii/Frame-4.png',
+    ), // Leo - Jul 23 - Aug 22
+    ZodiacData(
+      symbol: '♍',
+      imagePath: 'assets/images/zodii/Frame-5.png',
+    ), // Virgo - Aug 23 - Sep 22
+    ZodiacData(
+      symbol: '♎',
+      imagePath: 'assets/images/zodii/Frame-6.png',
+    ), // Libra - Sep 23 - Oct 22
+    ZodiacData(
+      symbol: '♏',
+      imagePath: 'assets/images/zodii/Frame-7.png',
+    ), // Scorpio - Oct 23 - Nov 21
+    ZodiacData(
+      symbol: '♐',
+      imagePath: 'assets/images/zodii/Frame-8.png',
+    ), // Sagittarius - Nov 22 - Dec 21
+    ZodiacData(
+      symbol: '♑',
+      imagePath: 'assets/images/zodii/Frame-9.png',
+    ), // Capricorn - Dec 22 - Jan 19
+    ZodiacData(
+      symbol: '♒',
+      imagePath: 'assets/images/zodii/Frame-10.png',
+    ), // Aquarius - Jan 20 - Feb 18
+    ZodiacData(
+      symbol: '♓',
+      imagePath: 'assets/images/zodii/Frame.png',
+    ), // Pisces - Feb 19 - Mar 20 (using Frame.png, positioned opposite to Aries)
+  ];
 
   @override
   void initState() {
@@ -46,17 +107,7 @@ class _GetStartedScreenState extends State<GetStartedScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1A1A2E), // Dark navy
-              Color(0xFF16213E), // Slightly lighter navy
-              Color(0xFF0F3460), // Deep blue
-            ],
-          ),
-        ),
+        decoration: const BoxDecoration(gradient: AppColors.mainGradient),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -96,14 +147,14 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                                         shape: BoxShape.circle,
                                         gradient: const RadialGradient(
                                           colors: [
-                                            Colors.amber,
-                                            Colors.orange,
+                                            AppColors.sun,
+                                            AppColors.sunGlow,
                                             Colors.deepOrange,
                                           ],
                                         ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.amber.withOpacity(
+                                            color: AppColors.sun.withOpacity(
                                               0.6,
                                             ),
                                             blurRadius: 15 * pulse,
@@ -121,26 +172,40 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                                 },
                               ),
 
-                              // Planets orbiting
-                              ...List.generate(3, (planetIndex) {
-                                final radius = 60.0 + (planetIndex * 30.0);
-                                final speed = [1.0, 0.7, 0.4][planetIndex];
+                              // Planets orbiting - adjusted to fit screen
+                              ...List.generate(2, (planetIndex) {
+                                final radius =
+                                    80.0 +
+                                    (planetIndex *
+                                        20.0); // Reduced distance between orbits - closer together
+                                final speed =
+                                    [
+                                      1.0,
+                                      0.7,
+                                    ][planetIndex]; // Only 2 planets now
+                                final initialOffset =
+                                    planetIndex *
+                                    math.pi /
+                                    2; // Different starting positions
                                 final angle =
-                                    _solarSystemController.value *
-                                    2 *
-                                    math.pi *
-                                    speed;
+                                    (_solarSystemController.value *
+                                        2 *
+                                        math.pi *
+                                        speed) +
+                                    initialOffset;
 
                                 final x = centerX + radius * math.cos(angle);
                                 final y = centerY + radius * math.sin(angle);
 
                                 final planetColors = [
-                                  Colors.lightBlue,
-                                  Colors.redAccent,
-                                  Colors.orange,
-                                ];
+                                  AppColors.planetBlue,
+                                  AppColors.planetRed,
+                                ]; // Only 2 planets now
 
-                                final planetSizes = [10.0, 8.0, 14.0];
+                                final planetSizes = [
+                                  14.0,
+                                  10.0,
+                                ]; // Only 2 planets now
 
                                 return Stack(
                                   children: [
@@ -154,9 +219,7 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                            color: Colors.white.withOpacity(
-                                              0.1,
-                                            ),
+                                            color: AppColors.orbitLine,
                                             width: 1,
                                           ),
                                         ),
@@ -183,9 +246,12 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                                           boxShadow: [
                                             BoxShadow(
                                               color: planetColors[planetIndex]
-                                                  .withOpacity(0.5),
-                                              blurRadius: 8,
-                                              spreadRadius: 2,
+                                                  .withOpacity(
+                                                    0.6,
+                                                  ), // More intense
+                                              blurRadius: 12, // Increased glow
+                                              spreadRadius:
+                                                  3, // Increased spread
                                             ),
                                           ],
                                         ),
@@ -195,14 +261,41 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                                 );
                               }),
 
-                              // Zodiac symbols around the outer edge
+                              // Zodiac orbit - outermost orbit line
+                              Positioned(
+                                left:
+                                    centerX -
+                                    math.min(containerWidth * 0.4, 170.0),
+                                top:
+                                    centerY -
+                                    math.min(containerWidth * 0.4, 170.0),
+                                child: Container(
+                                  width:
+                                      math.min(containerWidth * 0.4, 170.0) * 2,
+                                  height:
+                                      math.min(containerWidth * 0.4, 170.0) * 2,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.purple.withOpacity(0.3),
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // Zodiac symbols on the outermost orbit, perfectly centered and evenly distributed
                               ...List.generate(12, (index) {
-                                final angle = (index * 30.0) * (math.pi / 180);
+                                final angle =
+                                    (index * 30.0) *
+                                    (math.pi /
+                                        180); // Perfect 360°/12 = 30° distribution
                                 final radius = math.min(
-                                  containerWidth * 0.35,
-                                  120.0,
-                                ); // Responsive radius
-                                final symbolSize = 30.0;
+                                  containerWidth * 0.4,
+                                  170.0,
+                                ); // Same as orbit line radius
+                                final symbolSize =
+                                    40.0; // Slightly smaller to fit better on the orbit line
 
                                 final x =
                                     centerX +
@@ -211,20 +304,7 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                                     centerY +
                                     radius * math.sin(angle - math.pi / 2);
 
-                                final symbols = [
-                                  '♈',
-                                  '♉',
-                                  '♊',
-                                  '♋',
-                                  '♌',
-                                  '♍',
-                                  '♎',
-                                  '♏',
-                                  '♐',
-                                  '♑',
-                                  '♒',
-                                  '♓',
-                                ];
+                                final zodiacData = _zodiacData[index];
 
                                 return Positioned(
                                   left: x - symbolSize / 2,
@@ -232,28 +312,55 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                                   child: Container(
                                     width: symbolSize,
                                     height: symbolSize,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.purple.withOpacity(0.3),
-                                      border: Border.all(
-                                        color: Colors.white.withOpacity(0.4),
-                                        width: 1.5,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.purple.withOpacity(0.2),
-                                          blurRadius: 8,
-                                          spreadRadius: 2,
+                                    child: ClipOval(
+                                      child: Container(
+                                        width: symbolSize,
+                                        height: symbolSize,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: AppColors.zodiacCircle
+                                              .withOpacity(0.4), // More visible
+                                          border: Border.all(
+                                            color: AppColors.textPrimary
+                                                .withOpacity(
+                                                  0.6,
+                                                ), // More visible
+                                            width: 2, // Thicker border
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColors.zodiacCircle
+                                                  .withOpacity(0.3),
+                                              blurRadius: 12, // Increased glow
+                                              spreadRadius:
+                                                  3, // Increased spread
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        symbols[index],
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+                                        child: Center(
+                                          child: Image.asset(
+                                            zodiacData.imagePath,
+                                            width:
+                                                symbolSize *
+                                                0.7, // 70% of container size
+                                            height: symbolSize * 0.7,
+                                            fit: BoxFit.contain,
+                                            errorBuilder: (
+                                              context,
+                                              error,
+                                              stackTrace,
+                                            ) {
+                                              // Fallback to text if image fails to load
+                                              return Text(
+                                                zodiacData.symbol,
+                                                style: const TextStyle(
+                                                  color: AppColors.textPrimary,
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              );
+                                            },
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -278,7 +385,7 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                       style: Theme.of(
                         context,
                       ).textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.w300,
                         fontSize: 32,
                       ),
@@ -289,7 +396,7 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                       style: Theme.of(
                         context,
                       ).textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.bold,
                         fontSize: 36,
                         height: 1.1,
@@ -300,7 +407,7 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                     Text(
                       'Unlock the secrets of your zodiac sign, explore numerology insights, and get personalized horoscopes tailored just for you.',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white.withOpacity(0.8),
+                        color: AppColors.textSecondary,
                         fontSize: 16,
                         height: 1.5,
                       ),
@@ -319,8 +426,8 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                   child: ElevatedButton(
                     onPressed: () => context.go('/login'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF1A1A2E),
+                      backgroundColor: AppColors.textPrimary,
+                      foregroundColor: AppColors.primaryDark,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(28),
@@ -342,7 +449,7 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                   child: RichText(
                     text: TextSpan(
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: AppColors.textSecondary,
                         fontSize: 16,
                       ),
                       children: const [
@@ -350,7 +457,7 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                         TextSpan(
                           text: 'Sign In',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
