@@ -145,7 +145,9 @@ class RegisterScreen extends HookConsumerWidget {
 
                   // App Logo/Title
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    width: 120,
+                    height: 120,
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: colorScheme.primary.withOpacity(0.1),
@@ -154,10 +156,11 @@ class RegisterScreen extends HookConsumerWidget {
                         width: 1,
                       ),
                     ),
-                    child: Icon(
-                      CupertinoIcons.star_circle,
-                      size: 60,
-                      color: colorScheme.primary,
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/login-illustration.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
 
@@ -248,11 +251,12 @@ class RegisterScreen extends HookConsumerWidget {
                                       ? '${birthDate.value!.day}/${birthDate.value!.month}/${birthDate.value!.year}'
                                       : 'Birth Date (Optional)',
                                   style: textTheme.bodyLarge?.copyWith(
-                                    color: birthDate.value != null
-                                        ? colorScheme.onSurface
-                                        : colorScheme.onSurface.withOpacity(
-                                            0.5,
-                                          ),
+                                    color:
+                                        birthDate.value != null
+                                            ? colorScheme.onSurface
+                                            : colorScheme.onSurface.withOpacity(
+                                              0.5,
+                                            ),
                                   ),
                                 ),
                                 const Spacer(),
@@ -281,8 +285,10 @@ class RegisterScreen extends HookConsumerWidget {
                           hintText: 'Password',
                           isPassword: true,
                           isPasswordVisible: isPasswordVisible.value,
-                          onPasswordToggle: () => isPasswordVisible.value =
-                              !isPasswordVisible.value,
+                          onPasswordToggle:
+                              () =>
+                                  isPasswordVisible.value =
+                                      !isPasswordVisible.value,
                           prefixIcon: CupertinoIcons.lock,
                           textInputAction: TextInputAction.next,
                           colorScheme: colorScheme,
@@ -297,9 +303,10 @@ class RegisterScreen extends HookConsumerWidget {
                           hintText: 'Confirm Password',
                           isPassword: true,
                           isPasswordVisible: isConfirmPasswordVisible.value,
-                          onPasswordToggle: () =>
-                              isConfirmPasswordVisible.value =
-                                  !isConfirmPasswordVisible.value,
+                          onPasswordToggle:
+                              () =>
+                                  isConfirmPasswordVisible.value =
+                                      !isConfirmPasswordVisible.value,
                           prefixIcon: CupertinoIcons.lock_shield,
                           textInputAction: TextInputAction.done,
                           onSubmitted: (_) => handleRegister(),
@@ -382,16 +389,21 @@ class RegisterScreen extends HookConsumerWidget {
                           children: [
                             CupertinoButton(
                               padding: EdgeInsets.zero,
-                              onPressed: () =>
-                                  agreedToTerms.value = !agreedToTerms.value,
+                              onPressed:
+                                  () =>
+                                      agreedToTerms.value =
+                                          !agreedToTerms.value,
                               child: Icon(
                                 agreedToTerms.value
                                     ? CupertinoIcons.check_mark_circled_solid
                                     : CupertinoIcons.circle,
                                 size: 20,
-                                color: agreedToTerms.value
-                                    ? colorScheme.primary
-                                    : colorScheme.onSurface.withOpacity(0.5),
+                                color:
+                                    agreedToTerms.value
+                                        ? colorScheme.primary
+                                        : colorScheme.onSurface.withOpacity(
+                                          0.5,
+                                        ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -438,9 +450,8 @@ class RegisterScreen extends HookConsumerWidget {
 
                         // Register Button
                         _buildGlassButton(
-                          onPressed: authState.isLoading
-                              ? null
-                              : handleRegister,
+                          onPressed:
+                              authState.isLoading ? null : handleRegister,
                           isLoading: authState.isLoading,
                           colorScheme: colorScheme,
                           child: Text(
@@ -535,19 +546,20 @@ class RegisterScreen extends HookConsumerWidget {
             color: colorScheme.onSurface.withOpacity(0.6),
             size: 20,
           ),
-          suffixIcon: isPassword
-              ? CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: onPasswordToggle,
-                  child: Icon(
-                    isPasswordVisible
-                        ? CupertinoIcons.eye_slash
-                        : CupertinoIcons.eye,
-                    color: colorScheme.onSurface.withOpacity(0.6),
-                    size: 20,
-                  ),
-                )
-              : null,
+          suffixIcon:
+              isPassword
+                  ? CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: onPasswordToggle,
+                    child: Icon(
+                      isPasswordVisible
+                          ? CupertinoIcons.eye_slash
+                          : CupertinoIcons.eye,
+                      color: colorScheme.onSurface.withOpacity(0.6),
+                      size: 20,
+                    ),
+                  )
+                  : null,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -577,9 +589,8 @@ class RegisterScreen extends HookConsumerWidget {
           Text(
             text,
             style: textTheme.bodySmall?.copyWith(
-              color: isMet
-                  ? Colors.green
-                  : colorScheme.onSurface.withOpacity(0.7),
+              color:
+                  isMet ? Colors.green : colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
         ],
@@ -599,29 +610,32 @@ class RegisterScreen extends HookConsumerWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         gradient: LinearGradient(
-          colors: onPressed != null
-              ? [colorScheme.primary, colorScheme.secondary]
-              : [
-                  colorScheme.onSurface.withOpacity(0.3),
-                  colorScheme.onSurface.withOpacity(0.2),
-                ],
+          colors:
+              onPressed != null
+                  ? [colorScheme.primary, colorScheme.secondary]
+                  : [
+                    colorScheme.onSurface.withOpacity(0.3),
+                    colorScheme.onSurface.withOpacity(0.2),
+                  ],
         ),
-        boxShadow: onPressed != null
-            ? [
-                BoxShadow(
-                  color: colorScheme.primary.withOpacity(0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 6),
-                ),
-              ]
-            : null,
+        boxShadow:
+            onPressed != null
+                ? [
+                  BoxShadow(
+                    color: colorScheme.primary.withOpacity(0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 6),
+                  ),
+                ]
+                : null,
       ),
       child: CupertinoButton(
         padding: EdgeInsets.zero,
         onPressed: onPressed,
-        child: isLoading
-            ? const CupertinoActivityIndicator(color: Colors.white)
-            : child,
+        child:
+            isLoading
+                ? const CupertinoActivityIndicator(color: Colors.white)
+                : child,
       ),
     );
   }
@@ -641,16 +655,17 @@ class RegisterScreen extends HookConsumerWidget {
   void _showErrorDialog(BuildContext context, String message) {
     showCupertinoDialog(
       context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Error'),
-        content: Text(message),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+      builder:
+          (context) => CupertinoAlertDialog(
+            title: const Text('Error'),
+            content: Text(message),
+            actions: [
+              CupertinoDialogAction(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }
