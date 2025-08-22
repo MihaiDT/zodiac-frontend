@@ -16,7 +16,7 @@ class NumerologyScreen extends HookConsumerWidget {
     final firstNameController = useTextEditingController();
     final lastNameController = useTextEditingController();
     final selectedDate = useState<DateTime?>(null);
-    
+
     final keyFiguresState = ref.watch(keyFiguresProvider);
     final interpretationsState = ref.watch(interpretationsProvider);
 
@@ -58,19 +58,27 @@ class NumerologyScreen extends HookConsumerWidget {
                   ref,
                 ),
                 const SizedBox(height: 30),
-                if (keyFiguresState.hasValue && keyFiguresState.value != null) ...[
+                if (keyFiguresState.hasValue &&
+                    keyFiguresState.value != null) ...[
                   _buildKeyFiguresResults(theme, keyFiguresState.value!),
                   const SizedBox(height: 20),
                   _buildInterpretationsButton(theme, ref),
                 ],
-                if (interpretationsState.hasValue && interpretationsState.value != null) ...[
+                if (interpretationsState.hasValue &&
+                    interpretationsState.value != null) ...[
                   const SizedBox(height: 30),
-                  _buildInterpretationsResults(theme, interpretationsState.value!),
+                  _buildInterpretationsResults(
+                    theme,
+                    interpretationsState.value!,
+                  ),
                 ],
                 if (keyFiguresState.isLoading || interpretationsState.isLoading)
                   _buildLoadingIndicator(theme),
                 if (keyFiguresState.hasError || interpretationsState.hasError)
-                  _buildErrorMessage(theme, keyFiguresState.error ?? interpretationsState.error),
+                  _buildErrorMessage(
+                    theme,
+                    keyFiguresState.error ?? interpretationsState.error,
+                  ),
               ],
             ),
           ),
@@ -168,17 +176,12 @@ class NumerologyScreen extends HookConsumerWidget {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-              width: 1,
-            ),
+            border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
           ),
           child: CupertinoTextField(
             controller: controller,
             placeholder: placeholder,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: Colors.white,
-            ),
+            style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white),
             placeholderStyle: theme.textTheme.bodyLarge?.copyWith(
               color: Colors.white.withOpacity(0.6),
             ),
@@ -226,9 +229,10 @@ class NumerologyScreen extends HookConsumerWidget {
                         ? '${selectedDate.value!.day}/${selectedDate.value!.month}/${selectedDate.value!.year}'
                         : 'Select your birth date',
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      color: selectedDate.value != null
-                          ? Colors.white
-                          : Colors.white.withOpacity(0.6),
+                      color:
+                          selectedDate.value != null
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.6),
                     ),
                   ),
                 ),
@@ -245,43 +249,50 @@ class NumerologyScreen extends HookConsumerWidget {
     );
   }
 
-  void _showDatePicker(BuildContext context, ValueNotifier<DateTime?> selectedDate) {
+  void _showDatePicker(
+    BuildContext context,
+    ValueNotifier<DateTime?> selectedDate,
+  ) {
     showCupertinoModalPopup(
       context: context,
-      builder: (context) => Container(
-        height: 300,
-        color: CupertinoColors.systemBackground.resolveFrom(context),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  CupertinoButton(
-                    child: const Text('Cancel'),
-                    onPressed: () => Navigator.of(context).pop(),
+      builder:
+          (context) => Container(
+            height: 300,
+            color: CupertinoColors.systemBackground.resolveFrom(context),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
                   ),
-                  CupertinoButton(
-                    child: const Text('Done'),
-                    onPressed: () => Navigator.of(context).pop(),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CupertinoButton(
+                        child: const Text('Cancel'),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      CupertinoButton(
+                        child: const Text('Done'),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Expanded(
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.date,
+                    initialDateTime: selectedDate.value ?? DateTime.now(),
+                    maximumDate: DateTime.now(),
+                    onDateTimeChanged: (date) {
+                      selectedDate.value = date;
+                    },
+                  ),
+                ),
+              ],
             ),
-            Expanded(
-              child: CupertinoDatePicker(
-                mode: CupertinoDatePickerMode.date,
-                initialDateTime: selectedDate.value ?? DateTime.now(),
-                maximumDate: DateTime.now(),
-                onDateTimeChanged: (date) {
-                  selectedDate.value = date;
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -296,12 +307,13 @@ class NumerologyScreen extends HookConsumerWidget {
       builder: (context, ref, child) {
         final firstName = useState(firstNameController.text);
         final lastName = useState(lastNameController.text);
-        
+
         useEffect(() {
           void listener() {
             firstName.value = firstNameController.text;
             lastName.value = lastNameController.text;
           }
+
           firstNameController.addListener(listener);
           lastNameController.addListener(listener);
           return () {
@@ -310,7 +322,8 @@ class NumerologyScreen extends HookConsumerWidget {
           };
         });
 
-        final canCalculate = firstName.value.isNotEmpty &&
+        final canCalculate =
+            firstName.value.isNotEmpty &&
             lastName.value.isNotEmpty &&
             selectedDate.value != null;
 
@@ -318,35 +331,38 @@ class NumerologyScreen extends HookConsumerWidget {
           width: double.infinity,
           height: 56,
           decoration: BoxDecoration(
-            gradient: canCalculate
-                ? const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : null,
+            gradient:
+                canCalculate
+                    ? const LinearGradient(
+                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                    : null,
             color: canCalculate ? null : Colors.white.withOpacity(0.2),
             borderRadius: BorderRadius.circular(16),
-            boxShadow: canCalculate
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF6366F1).withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ]
-                : null,
+            boxShadow:
+                canCalculate
+                    ? [
+                      BoxShadow(
+                        color: const Color(0xFF6366F1).withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ]
+                    : null,
           ),
           child: CupertinoButton(
             padding: EdgeInsets.zero,
-            onPressed: canCalculate
-                ? () => _calculateKeyFigures(
+            onPressed:
+                canCalculate
+                    ? () => _calculateKeyFigures(
                       ref,
                       firstNameController.text,
                       lastNameController.text,
                       selectedDate.value!,
                     )
-                : null,
+                    : null,
             child: Text(
               'Calculate Key Figures',
               style: theme.textTheme.titleMedium?.copyWith(
@@ -360,7 +376,10 @@ class NumerologyScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildKeyFiguresResults(ThemeData theme, KeyFiguresResponse keyFigures) {
+  Widget _buildKeyFiguresResults(
+    ThemeData theme,
+    KeyFiguresResponse keyFigures,
+  ) {
     return _buildGlassContainer(
       theme,
       child: Column(
@@ -422,16 +441,18 @@ class NumerologyScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildNumberCard(ThemeData theme, String label, String number, Color color) {
+  Widget _buildNumberCard(
+    ThemeData theme,
+    String label,
+    String number,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
-        ),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
       ),
       child: Column(
         children: [
@@ -488,7 +509,10 @@ class NumerologyScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildInterpretationsResults(ThemeData theme, InterpretationsResponse interpretations) {
+  Widget _buildInterpretationsResults(
+    ThemeData theme,
+    InterpretationsResponse interpretations,
+  ) {
     return _buildGlassContainer(
       theme,
       child: Column(
@@ -502,7 +526,7 @@ class NumerologyScreen extends HookConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Overall Reading
           _buildInterpretationCard(
             theme,
@@ -511,7 +535,7 @@ class NumerologyScreen extends HookConsumerWidget {
             const Color(0xFF6366F1),
           ),
           const SizedBox(height: 12),
-          
+
           // Strengths
           _buildListCard(
             theme,
@@ -520,7 +544,7 @@ class NumerologyScreen extends HookConsumerWidget {
             const Color(0xFF10B981),
           ),
           const SizedBox(height: 12),
-          
+
           // Challenges
           _buildListCard(
             theme,
@@ -529,7 +553,7 @@ class NumerologyScreen extends HookConsumerWidget {
             const Color(0xFFEF4444),
           ),
           const SizedBox(height: 12),
-          
+
           // Advice
           _buildInterpretationCard(
             theme,
@@ -542,16 +566,18 @@ class NumerologyScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildListCard(ThemeData theme, String title, List<String> items, Color color) {
+  Widget _buildListCard(
+    ThemeData theme,
+    String title,
+    List<String> items,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
-        ),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -564,42 +590,51 @@ class NumerologyScreen extends HookConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
-          ...items.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '• ',
-                  style: TextStyle(color: color, fontWeight: FontWeight.bold),
-                ),
-                Expanded(
-                  child: Text(
-                    item,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withOpacity(0.9),
-                      height: 1.5,
-                    ),
+          ...items
+              .map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '• ',
+                        style: TextStyle(
+                          color: color,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          item,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.white.withOpacity(0.9),
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          )).toList(),
+              )
+              .toList(),
         ],
       ),
     );
   }
 
-  Widget _buildInterpretationCard(ThemeData theme, String title, String content, Color color) {
+  Widget _buildInterpretationCard(
+    ThemeData theme,
+    String title,
+    String content,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
-        ),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -630,10 +665,7 @@ class NumerologyScreen extends HookConsumerWidget {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            const CupertinoActivityIndicator(
-              color: Colors.white,
-              radius: 16,
-            ),
+            const CupertinoActivityIndicator(color: Colors.white, radius: 16),
             const SizedBox(height: 16),
             Text(
               'Calculating your numbers...',
@@ -654,10 +686,7 @@ class NumerologyScreen extends HookConsumerWidget {
       decoration: BoxDecoration(
         color: Colors.red.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.red.withOpacity(0.3),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.red.withOpacity(0.3), width: 1),
       ),
       child: Row(
         children: [
@@ -670,9 +699,7 @@ class NumerologyScreen extends HookConsumerWidget {
           Expanded(
             child: Text(
               'Error: ${error.toString()}',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.white,
-              ),
+              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white),
             ),
           ),
         ],
@@ -693,15 +720,18 @@ class NumerologyScreen extends HookConsumerWidget {
     final request = NumerologyRequest(
       firstName: firstName,
       lastName: lastName,
-      birthdate: '${birthDate.year}-${birthDate.month.toString().padLeft(2, '0')}-${birthDate.day.toString().padLeft(2, '0')}',
+      birthdate:
+          '${birthDate.year}-${birthDate.month.toString().padLeft(2, '0')}-${birthDate.day.toString().padLeft(2, '0')}',
     );
-    
+
     // Update the form provider, which will trigger the keyFiguresProvider
-    ref.read(numerologyFormProvider.notifier).updateForm(
-      firstName: request.firstName,
-      lastName: request.lastName,
-      birthdate: request.birthdate,
-    );
+    ref
+        .read(numerologyFormProvider.notifier)
+        .updateForm(
+          firstName: request.firstName,
+          lastName: request.lastName,
+          birthdate: request.birthdate,
+        );
   }
 
   void _getInterpretations(WidgetRef ref) {

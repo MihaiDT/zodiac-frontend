@@ -36,14 +36,14 @@ class AuthRepository {
       if (data == null) {
         throw Exception('Invalid response: missing data field');
       }
-      
+
       final userData = data['user'];
       final tokensData = data['tokens'];
-      
+
       if (userData == null) {
         throw Exception('Invalid response: missing user data');
       }
-      
+
       if (tokensData == null) {
         throw Exception('Invalid response: missing tokens data');
       }
@@ -51,9 +51,10 @@ class AuthRepository {
       // Extract tokens from the API response
       final accessToken = tokensData['accessToken'] as String?;
       final refreshTokenData = tokensData['refreshToken'];
-      final refreshToken = refreshTokenData is String 
-          ? refreshTokenData 
-          : refreshTokenData?['token'] as String?;
+      final refreshToken =
+          refreshTokenData is String
+              ? refreshTokenData
+              : refreshTokenData?['token'] as String?;
 
       if (accessToken == null || refreshToken == null) {
         throw Exception('Invalid response: missing token data');
@@ -279,16 +280,20 @@ class AuthRepository {
               return ValidationException(message);
             case 429:
               final retryAfter = responseData?['details']?['retryAfter'];
-              final waitTime = retryAfter != null ? 
-                '${(retryAfter / 60).ceil()} minutes' : 'a few minutes';
+              final waitTime =
+                  retryAfter != null
+                      ? '${(retryAfter / 60).ceil()} minutes'
+                      : 'a few minutes';
               return AuthException(
-                'Too many login attempts. Please try again in $waitTime.'
+                'Too many login attempts. Please try again in $waitTime.',
               );
             case 500:
               // Handle specific server errors for login
-              if (errorType == 'internal_error' && 
+              if (errorType == 'internal_error' &&
                   message.toLowerCase().contains('invalid email or password')) {
-                return AuthException('Invalid email or password. Please check your credentials.');
+                return AuthException(
+                  'Invalid email or password. Please check your credentials.',
+                );
               }
               return AuthException('Server error. Please try again later.');
             default:

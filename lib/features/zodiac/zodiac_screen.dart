@@ -54,7 +54,8 @@ class ZodiacScreen extends ConsumerWidget {
             // Zodiac signs grid
             zodiacSignsAsync.when(
               loading: () => _buildLoadingGrid(),
-              error: (error, stackTrace) => _buildErrorState(context, error, ref),
+              error:
+                  (error, stackTrace) => _buildErrorState(context, error, ref),
               data: (signs) => _buildZodiacGrid(context, signs),
             ),
           ],
@@ -99,9 +100,9 @@ class ZodiacScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             'Failed to load zodiac signs',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Colors.white,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: Colors.white),
           ),
           const SizedBox(height: 8),
           Text(
@@ -176,13 +177,10 @@ class _ZodiacSignCard extends StatelessWidget {
               // Symbol
               Text(
                 sign.symbol,
-                style: const TextStyle(
-                  fontSize: 48,
-                  color: Colors.white,
-                ),
+                style: const TextStyle(fontSize: 48, color: Colors.white),
               ),
               const SizedBox(height: 12),
-              
+
               // Name
               Text(
                 sign.name,
@@ -194,7 +192,7 @@ class _ZodiacSignCard extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 4),
-              
+
               // Date range
               Text(
                 '${sign.startDate} - ${sign.endDate}',
@@ -205,7 +203,7 @@ class _ZodiacSignCard extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              
+
               // Element badge
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

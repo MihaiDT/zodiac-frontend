@@ -43,7 +43,8 @@ class ProfileManagementScreen extends HookConsumerWidget {
                 profileState.when(
                   data: (profile) => _buildProfileContent(theme, profile, ref),
                   loading: () => _buildLoadingIndicator(theme),
-                  error: (error, _) => _buildErrorMessage(context, theme, error),
+                  error:
+                      (error, _) => _buildErrorMessage(context, theme, error),
                 ),
               ],
             ),
@@ -442,45 +443,46 @@ class ProfileManagementScreen extends HookConsumerWidget {
     WidgetRef ref,
   ) {
     return Builder(
-      builder: (context) => Column(
-        children: [
-          _buildActionButton(
-            theme,
-            'Update Profile',
-            'Edit personal information',
-            CupertinoIcons.person_badge_plus,
-            const Color(0xFF6366F1),
-            () => _showEditProfileModal(theme, profile, ref),
+      builder:
+          (context) => Column(
+            children: [
+              _buildActionButton(
+                theme,
+                'Update Profile',
+                'Edit personal information',
+                CupertinoIcons.person_badge_plus,
+                const Color(0xFF6366F1),
+                () => _showEditProfileModal(theme, profile, ref),
+              ),
+              const SizedBox(height: 12),
+              _buildActionButton(
+                theme,
+                'Export Data',
+                'Download your profile data',
+                CupertinoIcons.cloud_download,
+                const Color(0xFF10B981),
+                () => _exportProfileData(ref),
+              ),
+              const SizedBox(height: 12),
+              _buildActionButton(
+                theme,
+                'Sign Out',
+                'Log out from your account',
+                CupertinoIcons.power,
+                const Color(0xFFEF4444),
+                () => _handleLogout(context, ref),
+              ),
+              const SizedBox(height: 12),
+              _buildActionButton(
+                theme,
+                'Reset Preferences',
+                'Restore default settings',
+                CupertinoIcons.refresh,
+                const Color(0xFFFF6B35),
+                () => _resetPreferences(ref),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          _buildActionButton(
-            theme,
-            'Export Data',
-            'Download your profile data',
-            CupertinoIcons.cloud_download,
-            const Color(0xFF10B981),
-            () => _exportProfileData(ref),
-          ),
-          const SizedBox(height: 12),
-          _buildActionButton(
-            theme,
-            'Sign Out',
-            'Log out from your account',
-            CupertinoIcons.power,
-            const Color(0xFFEF4444),
-            () => _handleLogout(context, ref),
-          ),
-          const SizedBox(height: 12),
-          _buildActionButton(
-            theme,
-            'Reset Preferences',
-            'Restore default settings',
-            CupertinoIcons.refresh,
-            const Color(0xFFFF6B35),
-            () => _resetPreferences(ref),
-          ),
-        ],
-      ),
     );
   }
 
@@ -572,20 +574,24 @@ class ProfileManagementScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildErrorMessage(BuildContext context, ThemeData theme, Object error) {
+  Widget _buildErrorMessage(
+    BuildContext context,
+    ThemeData theme,
+    Object error,
+  ) {
     final errorString = error.toString();
-    
+
     // Check for different types of errors
     final bool isAuthError =
         errorString.contains('401') ||
         errorString.contains('unauthorized') ||
         errorString.contains('token');
-        
+
     final bool isServerError =
         errorString.contains('500') ||
         errorString.contains('internal_error') ||
         errorString.contains('server error');
-        
+
     final bool isRateLimit =
         errorString.contains('429') ||
         errorString.contains('rate_limit_exceeded') ||
@@ -594,22 +600,25 @@ class ProfileManagementScreen extends HookConsumerWidget {
     String title;
     String message;
     IconData icon;
-    
+
     if (isAuthError) {
       title = 'Autentificare Necesară';
       message = 'Te rog să te autentifici pentru a vedea profilul.';
       icon = CupertinoIcons.lock;
     } else if (isServerError) {
       title = 'Problemă Server';
-      message = 'Serverul întâmpină probleme temporare. Te rog încearcă din nou în câteva minute.';
+      message =
+          'Serverul întâmpină probleme temporare. Te rog încearcă din nou în câteva minute.';
       icon = CupertinoIcons.gear_alt;
     } else if (isRateLimit) {
       title = 'Prea Multe Cereri';
-      message = 'Ai făcut prea multe cereri. Te rog să aștepți ~15 minute și încearcă din nou.';
+      message =
+          'Ai făcut prea multe cereri. Te rog să aștepți ~15 minute și încearcă din nou.';
       icon = CupertinoIcons.clock;
     } else {
       title = 'Eroare Încărcare Profil';
-      message = 'A apărut o problemă la încărcarea profilului. Verifică conexiunea și încearcă din nou.';
+      message =
+          'A apărut o problemă la încărcarea profilului. Verifică conexiunea și încearcă din nou.';
       icon = CupertinoIcons.exclamationmark_triangle;
     }
 
@@ -622,11 +631,7 @@ class ProfileManagementScreen extends HookConsumerWidget {
       ),
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: Colors.red,
-            size: 40,
-          ),
+          Icon(icon, color: Colors.red, size: 40),
           const SizedBox(height: 16),
           Text(
             title,
@@ -735,21 +740,22 @@ class ProfileManagementScreen extends HookConsumerWidget {
     // Show confirmation dialog
     final shouldLogout = await showCupertinoDialog<bool>(
       context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Confirm Logout'),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          CupertinoDialogAction(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.of(context).pop(false),
+      builder:
+          (context) => CupertinoAlertDialog(
+            title: const Text('Confirm Logout'),
+            content: const Text('Are you sure you want to logout?'),
+            actions: [
+              CupertinoDialogAction(
+                child: const Text('Cancel'),
+                onPressed: () => Navigator.of(context).pop(false),
+              ),
+              CupertinoDialogAction(
+                isDestructiveAction: true,
+                child: const Text('Logout'),
+                onPressed: () => Navigator.of(context).pop(true),
+              ),
+            ],
           ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
-            child: const Text('Logout'),
-            onPressed: () => Navigator.of(context).pop(true),
-          ),
-        ],
-      ),
     );
 
     if (shouldLogout == true) {
@@ -758,21 +764,22 @@ class ProfileManagementScreen extends HookConsumerWidget {
         showCupertinoDialog(
           context: context,
           barrierDismissible: false,
-          builder: (context) => const CupertinoAlertDialog(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CupertinoActivityIndicator(),
-                SizedBox(height: 16),
-                Text('Logging out...'),
-              ],
-            ),
-          ),
+          builder:
+              (context) => const CupertinoAlertDialog(
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CupertinoActivityIndicator(),
+                    SizedBox(height: 16),
+                    Text('Logging out...'),
+                  ],
+                ),
+              ),
         );
 
         // Perform logout
         await ref.read(authControllerProvider.notifier).logout();
-        
+
         // Dismiss loading dialog
         if (context.mounted) {
           Navigator.of(context).pop();
@@ -787,24 +794,27 @@ class ProfileManagementScreen extends HookConsumerWidget {
         if (context.mounted) {
           Navigator.of(context).pop();
         }
-        
+
         // Show error (but logout still happened locally)
         if (context.mounted) {
           showCupertinoDialog(
             context: context,
-            builder: (context) => CupertinoAlertDialog(
-              title: const Text('Logout Complete'),
-              content: const Text('You have been logged out locally. Network issues prevented server logout.'),
-              actions: [
-                CupertinoDialogAction(
-                  child: const Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    context.go('/login');
-                  },
+            builder:
+                (context) => CupertinoAlertDialog(
+                  title: const Text('Logout Complete'),
+                  content: const Text(
+                    'You have been logged out locally. Network issues prevented server logout.',
+                  ),
+                  actions: [
+                    CupertinoDialogAction(
+                      child: const Text('OK'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        context.go('/login');
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
           );
         }
       }

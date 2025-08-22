@@ -4,9 +4,10 @@ import '../models/profile.dart';
 import '../services/profile_api_service.dart';
 
 // User profile provider with manual retry control
-final userProfileProvider = StateNotifierProvider<UserProfileNotifier, AsyncValue<UserProfile>>((ref) {
-  return UserProfileNotifier(ref);
-});
+final userProfileProvider =
+    StateNotifierProvider<UserProfileNotifier, AsyncValue<UserProfile>>((ref) {
+      return UserProfileNotifier(ref);
+    });
 
 // User profile notifier with retry control
 class UserProfileNotifier extends StateNotifier<AsyncValue<UserProfile>> {
@@ -26,7 +27,7 @@ class UserProfileNotifier extends StateNotifier<AsyncValue<UserProfile>> {
       _errorCount = 0; // Reset error count on success
     } catch (error, stackTrace) {
       _errorCount++;
-      
+
       // Don't retry on server errors or after max retries
       if (_shouldStopRetrying(error)) {
         state = AsyncValue.error(error, stackTrace);
@@ -42,20 +43,24 @@ class UserProfileNotifier extends StateNotifier<AsyncValue<UserProfile>> {
 
   bool _shouldStopRetrying(dynamic error) {
     final errorString = error.toString();
-    
+
     // Stop retrying on these conditions:
     // 1. Too many retries
     if (_errorCount >= _maxRetries) return true;
-    
+
     // 2. Server errors (500) - these won't fix themselves
-    if (errorString.contains('500') || errorString.contains('internal_error')) return true;
-    
+    if (errorString.contains('500') || errorString.contains('internal_error'))
+      return true;
+
     // 3. Rate limiting (429) - need to wait longer
-    if (errorString.contains('429') || errorString.contains('rate_limit_exceeded')) return true;
-    
+    if (errorString.contains('429') ||
+        errorString.contains('rate_limit_exceeded'))
+      return true;
+
     // 4. Authentication errors (should redirect to login)
-    if (errorString.contains('401') || errorString.contains('unauthorized')) return true;
-    
+    if (errorString.contains('401') || errorString.contains('unauthorized'))
+      return true;
+
     return false;
   }
 

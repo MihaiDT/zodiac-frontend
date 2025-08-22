@@ -229,9 +229,9 @@ class ZodiacSignDetailScreen extends ConsumerWidget {
                     sign.personality!.description,
                     elementColor,
                   ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Strengths
                 if (sign.personality?.strengths.isNotEmpty == true)
                   _buildTraitsCard(
@@ -240,10 +240,10 @@ class ZodiacSignDetailScreen extends ConsumerWidget {
                     sign.personality!.strengths,
                     Colors.green,
                   ),
-                
+
                 const SizedBox(height: 16),
-                
-                // Weaknesses 
+
+                // Weaknesses
                 if (sign.personality?.weaknesses.isNotEmpty == true)
                   _buildTraitsCard(
                     context,

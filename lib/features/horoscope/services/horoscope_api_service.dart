@@ -16,9 +16,7 @@ class HoroscopeApiService {
     try {
       final response = await _client.get(
         '/api/horoscope/$sign',
-        queryParameters: {
-          'tone': tone.name,
-        },
+        queryParameters: {'tone': tone.name},
       );
       final data = response.data['data'] ?? response.data;
       return HoroscopeResponse.fromJson(data);

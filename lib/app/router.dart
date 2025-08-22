@@ -119,9 +119,11 @@ class AppRouter {
       redirect: (context, state) {
         final isAuthenticated = ref.read(isAuthenticatedProvider);
         final isLoading = ref.read(authLoadingProvider);
-        final isGetStartedRoute = state.fullPath?.startsWith('/get-started') == true;
-        final isLoginRoute = state.fullPath?.startsWith('/login') == true ||
-                            state.fullPath?.startsWith('/register') == true;
+        final isGetStartedRoute =
+            state.fullPath?.startsWith('/get-started') == true;
+        final isLoginRoute =
+            state.fullPath?.startsWith('/login') == true ||
+            state.fullPath?.startsWith('/register') == true;
 
         // Don't redirect while authentication is loading
         if (isLoading) {

@@ -12,19 +12,22 @@ class ProfileApiService {
   Future<UserProfile> getProfile() async {
     try {
       final response = await _client.get('/api/profiles/me');
-      
+
       // Check if the response is successful
       if (response.statusCode != 200) {
         throw Exception('Failed to load profile: ${response.statusCode}');
       }
-      
+
       final data = response.data['data'] ?? response.data;
-      
+
       // Validate that we have the required profile data
-      if (data == null || data['id'] == null || data['email'] == null || data['name'] == null) {
+      if (data == null ||
+          data['id'] == null ||
+          data['email'] == null ||
+          data['name'] == null) {
         throw Exception('Invalid profile data received from server');
       }
-      
+
       // Map the API response to our frontend model structure
       final mappedData = <String, dynamic>{
         'id': data['id'],
@@ -39,7 +42,7 @@ class ProfileApiService {
         'updatedAt': data['updated_at'] ?? data['updatedAt'],
         'settings': _mapSettingsData(data),
       };
-      
+
       return UserProfile.fromJson(mappedData);
     } catch (e) {
       rethrow;
@@ -64,9 +67,11 @@ class ProfileApiService {
   Map<String, dynamic> _mapSettingsData(Map<String, dynamic> data) {
     // Get settings from the API response
     final apiSettings = data['settings'] as Map<String, dynamic>? ?? {};
-    final apiNotifications = data['notifications'] as Map<String, dynamic>? ?? 
-                           apiSettings['notifications'] as Map<String, dynamic>? ?? {};
-    
+    final apiNotifications =
+        data['notifications'] as Map<String, dynamic>? ??
+        apiSettings['notifications'] as Map<String, dynamic>? ??
+        {};
+
     // Map to our frontend structure
     return {
       'horoscopeTone': data['tone'] ?? apiSettings['tone'] ?? 'serious',
@@ -74,12 +79,27 @@ class ProfileApiService {
       'language': apiSettings['language'] ?? 'en',
       'timezone': data['timezone'] ?? apiSettings['timezone'] ?? 'UTC',
       'notifications': {
-        'dailyHoroscope': apiNotifications['daily'] ?? apiNotifications['dailyHoroscope'] ?? true,
-        'weeklyForecast': apiNotifications['weekly'] ?? apiNotifications['weeklyForecast'] ?? true,
-        'monthlyInsights': apiNotifications['monthly'] ?? apiNotifications['monthlyInsights'] ?? true,
-        'numerologyUpdates': apiNotifications['numerology'] ?? apiNotifications['numerologyUpdates'] ?? true,
-        'specialEvents': apiNotifications['special'] ?? apiNotifications['specialEvents'] ?? true,
-      }
+        'dailyHoroscope':
+            apiNotifications['daily'] ??
+            apiNotifications['dailyHoroscope'] ??
+            true,
+        'weeklyForecast':
+            apiNotifications['weekly'] ??
+            apiNotifications['weeklyForecast'] ??
+            true,
+        'monthlyInsights':
+            apiNotifications['monthly'] ??
+            apiNotifications['monthlyInsights'] ??
+            true,
+        'numerologyUpdates':
+            apiNotifications['numerology'] ??
+            apiNotifications['numerologyUpdates'] ??
+            true,
+        'specialEvents':
+            apiNotifications['special'] ??
+            apiNotifications['specialEvents'] ??
+            true,
+      },
     };
   }
 

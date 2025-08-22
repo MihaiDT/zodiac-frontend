@@ -159,33 +159,35 @@ class AuthController extends StateNotifier<AuthState> {
     if (error.contains('rate_limit_exceeded') || error.contains('429')) {
       return 'Prea multe încercări. Te rog încearcă din nou mai târziu (în ~8 minute).';
     }
-    
+
     // Check for network errors
     if (error.contains('SocketException') || error.contains('network')) {
       return 'Problemă de conexiune. Verifică internetul și încearcă din nou.';
     }
-    
+
     // Check for timeout
     if (error.contains('timeout')) {
       return 'Conexiunea a expirat. Te rog încearcă din nou.';
     }
-    
+
     // Check for invalid credentials
     if (error.contains('invalid_credentials') || error.contains('401')) {
       return 'Email sau parolă incorectă.';
     }
-    
+
     // Check for user not found
     if (error.contains('user_not_found') || error.contains('404')) {
       return 'Contul nu a fost găsit. Verifică email-ul sau creează un cont nou.';
     }
-    
+
     // Default error message
     if (error.contains('Exception:')) {
       return error.split('Exception:').last.trim();
     }
-    
-    return error.length > 100 ? 'A apărut o eroare. Te rog încearcă din nou.' : error;
+
+    return error.length > 100
+        ? 'A apărut o eroare. Te rog încearcă din nou.'
+        : error;
   }
 }
 

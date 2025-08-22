@@ -66,10 +66,14 @@ class HoroscopeScreen extends ConsumerWidget {
             if (selectedSign != null)
               horoscopeAsync.when(
                 loading: () => _buildLoadingState(),
-                error: (error, stackTrace) => _buildErrorState(context, error, ref),
-                data: (horoscope) => horoscope != null
-                    ? _buildHoroscopeResult(context, horoscope)
-                    : const SizedBox.shrink(),
+                error:
+                    (error, stackTrace) =>
+                        _buildErrorState(context, error, ref),
+                data:
+                    (horoscope) =>
+                        horoscope != null
+                            ? _buildHoroscopeResult(context, horoscope)
+                            : const SizedBox.shrink(),
               ),
           ],
         ),
@@ -77,20 +81,79 @@ class HoroscopeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSignSelector(BuildContext context, WidgetRef ref, String? selectedSign) {
+  Widget _buildSignSelector(
+    BuildContext context,
+    WidgetRef ref,
+    String? selectedSign,
+  ) {
     final zodiacSigns = [
-      {'id': 'aries', 'name': 'Aries', 'symbol': '♈', 'dates': 'Mar 21 - Apr 19'},
-      {'id': 'taurus', 'name': 'Taurus', 'symbol': '♉', 'dates': 'Apr 20 - May 20'},
-      {'id': 'gemini', 'name': 'Gemini', 'symbol': '♊', 'dates': 'May 21 - Jun 20'},
-      {'id': 'cancer', 'name': 'Cancer', 'symbol': '♋', 'dates': 'Jun 21 - Jul 22'},
+      {
+        'id': 'aries',
+        'name': 'Aries',
+        'symbol': '♈',
+        'dates': 'Mar 21 - Apr 19',
+      },
+      {
+        'id': 'taurus',
+        'name': 'Taurus',
+        'symbol': '♉',
+        'dates': 'Apr 20 - May 20',
+      },
+      {
+        'id': 'gemini',
+        'name': 'Gemini',
+        'symbol': '♊',
+        'dates': 'May 21 - Jun 20',
+      },
+      {
+        'id': 'cancer',
+        'name': 'Cancer',
+        'symbol': '♋',
+        'dates': 'Jun 21 - Jul 22',
+      },
       {'id': 'leo', 'name': 'Leo', 'symbol': '♌', 'dates': 'Jul 23 - Aug 22'},
-      {'id': 'virgo', 'name': 'Virgo', 'symbol': '♍', 'dates': 'Aug 23 - Sep 22'},
-      {'id': 'libra', 'name': 'Libra', 'symbol': '♎', 'dates': 'Sep 23 - Oct 22'},
-      {'id': 'scorpio', 'name': 'Scorpio', 'symbol': '♏', 'dates': 'Oct 23 - Nov 21'},
-      {'id': 'sagittarius', 'name': 'Sagittarius', 'symbol': '♐', 'dates': 'Nov 22 - Dec 21'},
-      {'id': 'capricorn', 'name': 'Capricorn', 'symbol': '♑', 'dates': 'Dec 22 - Jan 19'},
-      {'id': 'aquarius', 'name': 'Aquarius', 'symbol': '♒', 'dates': 'Jan 20 - Feb 18'},
-      {'id': 'pisces', 'name': 'Pisces', 'symbol': '♓', 'dates': 'Feb 19 - Mar 20'},
+      {
+        'id': 'virgo',
+        'name': 'Virgo',
+        'symbol': '♍',
+        'dates': 'Aug 23 - Sep 22',
+      },
+      {
+        'id': 'libra',
+        'name': 'Libra',
+        'symbol': '♎',
+        'dates': 'Sep 23 - Oct 22',
+      },
+      {
+        'id': 'scorpio',
+        'name': 'Scorpio',
+        'symbol': '♏',
+        'dates': 'Oct 23 - Nov 21',
+      },
+      {
+        'id': 'sagittarius',
+        'name': 'Sagittarius',
+        'symbol': '♐',
+        'dates': 'Nov 22 - Dec 21',
+      },
+      {
+        'id': 'capricorn',
+        'name': 'Capricorn',
+        'symbol': '♑',
+        'dates': 'Dec 22 - Jan 19',
+      },
+      {
+        'id': 'aquarius',
+        'name': 'Aquarius',
+        'symbol': '♒',
+        'dates': 'Jan 20 - Feb 18',
+      },
+      {
+        'id': 'pisces',
+        'name': 'Pisces',
+        'symbol': '♓',
+        'dates': 'Feb 19 - Mar 20',
+      },
     ];
 
     return GlassUtils.glassContainer(
@@ -106,7 +169,7 @@ class HoroscopeScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           if (selectedSign != null)
             Container(
               width: double.infinity,
@@ -122,7 +185,9 @@ class HoroscopeScreen extends ConsumerWidget {
               child: Row(
                 children: [
                   Text(
-                    zodiacSigns.firstWhere((sign) => sign['id'] == selectedSign)['symbol']!,
+                    zodiacSigns.firstWhere(
+                      (sign) => sign['id'] == selectedSign,
+                    )['symbol']!,
                     style: const TextStyle(fontSize: 24, color: Colors.white),
                   ),
                   const SizedBox(width: 12),
@@ -131,7 +196,9 @@ class HoroscopeScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          zodiacSigns.firstWhere((sign) => sign['id'] == selectedSign)['name']!,
+                          zodiacSigns.firstWhere(
+                            (sign) => sign['id'] == selectedSign,
+                          )['name']!,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -139,7 +206,9 @@ class HoroscopeScreen extends ConsumerWidget {
                           ),
                         ),
                         Text(
-                          zodiacSigns.firstWhere((sign) => sign['id'] == selectedSign)['dates']!,
+                          zodiacSigns.firstWhere(
+                            (sign) => sign['id'] == selectedSign,
+                          )['dates']!,
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.7),
                             fontSize: 12,
@@ -204,7 +273,11 @@ class HoroscopeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildToneSelector(BuildContext context, WidgetRef ref, HoroscopeTone selectedTone) {
+  Widget _buildToneSelector(
+    BuildContext context,
+    WidgetRef ref,
+    HoroscopeTone selectedTone,
+  ) {
     return GlassUtils.glassContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,7 +291,7 @@ class HoroscopeScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           CupertinoSlidingSegmentedControl<HoroscopeTone>(
             backgroundColor: Colors.white.withOpacity(0.1),
             thumbColor: AppTheme.primaryPurple,
@@ -266,10 +339,7 @@ class HoroscopeScreen extends ConsumerWidget {
             SizedBox(height: 16),
             Text(
               'Reading the stars...',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
           ],
         ),
@@ -289,9 +359,9 @@ class HoroscopeScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             'Failed to load horoscope',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Colors.white,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: Colors.white),
           ),
           const SizedBox(height: 16),
           CupertinoButton.filled(
@@ -305,7 +375,10 @@ class HoroscopeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHoroscopeResult(BuildContext context, HoroscopeResponse horoscope) {
+  Widget _buildHoroscopeResult(
+    BuildContext context,
+    HoroscopeResponse horoscope,
+  ) {
     return Column(
       children: [
         // Main prediction
@@ -327,7 +400,10 @@ class HoroscopeScreen extends ConsumerWidget {
                   ),
                   const Spacer(),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       color: Colors.white.withOpacity(0.2),
@@ -463,57 +539,68 @@ class HoroscopeScreen extends ConsumerWidget {
 
         // Refresh button
         Consumer(
-          builder: (context, ref, _) => CupertinoButton.filled(
-            onPressed: () {
-              ref.read(horoscopeRefreshProvider.notifier).state++;
-            },
-            child: const Text('Get New Reading'),
-          ),
+          builder:
+              (context, ref, _) => CupertinoButton.filled(
+                onPressed: () {
+                  ref.read(horoscopeRefreshProvider.notifier).state++;
+                },
+                child: const Text('Get New Reading'),
+              ),
         ),
       ],
     );
   }
 
-  void _showSignPicker(BuildContext context, WidgetRef ref, List<Map<String, String>> zodiacSigns) {
+  void _showSignPicker(
+    BuildContext context,
+    WidgetRef ref,
+    List<Map<String, String>> zodiacSigns,
+  ) {
     showCupertinoModalPopup(
       context: context,
-      builder: (BuildContext context) => Container(
-        height: 300,
-        padding: const EdgeInsets.only(top: 6.0),
-        margin: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        color: CupertinoColors.systemBackground.resolveFrom(context),
-        child: SafeArea(
-          top: false,
-          child: CupertinoPicker(
-            magnification: 1.22,
-            squeeze: 1.2,
-            useMagnifier: true,
-            itemExtent: 40,
-            onSelectedItemChanged: (int selectedItem) {
-              ref.read(horoscopeSelectedSignProvider.notifier).state = 
-                  zodiacSigns[selectedItem]['id'];
-            },
-            children: zodiacSigns.map((sign) => Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    sign['symbol']!,
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    sign['name']!,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ],
+      builder:
+          (BuildContext context) => Container(
+            height: 300,
+            padding: const EdgeInsets.only(top: 6.0),
+            margin: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            color: CupertinoColors.systemBackground.resolveFrom(context),
+            child: SafeArea(
+              top: false,
+              child: CupertinoPicker(
+                magnification: 1.22,
+                squeeze: 1.2,
+                useMagnifier: true,
+                itemExtent: 40,
+                onSelectedItemChanged: (int selectedItem) {
+                  ref.read(horoscopeSelectedSignProvider.notifier).state =
+                      zodiacSigns[selectedItem]['id'];
+                },
+                children:
+                    zodiacSigns
+                        .map(
+                          (sign) => Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  sign['symbol']!,
+                                  style: const TextStyle(fontSize: 20),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  sign['name']!,
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                        .toList(),
               ),
-            )).toList(),
+            ),
           ),
-        ),
-      ),
     );
   }
 }
