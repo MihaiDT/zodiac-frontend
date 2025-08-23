@@ -57,11 +57,10 @@ class ZodiacNumerologyApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Zodiac & Numerology',
       debugShowCheckedModeBanner: false, // Hide debug banner
-      
-      // Theme configuration
+      // Theme configuration - Auto detect system theme
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark, // Default to dark mode
+      themeMode: ThemeMode.system, // Auto-detect system theme
       
       // Router configuration
       routerConfig: router,
