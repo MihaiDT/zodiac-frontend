@@ -37,9 +37,7 @@ dependencies:
   freezed_annotation: ^2.4.1
 
   # Localization
-  intl: ^0.20.2
-  flutter_localizations:
-    sdk: flutter
+  intl: ^0.19.0
 
   # Utils & Haptics
   url_launcher: ^6.2.2
