@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'providers/auth_controller.dart';
+import '../onboarding/providers/onboarding_provider.dart';
 
 class RegisterScreen extends HookConsumerWidget {
   const RegisterScreen({super.key});
@@ -23,6 +24,9 @@ class RegisterScreen extends HookConsumerWidget {
     final authState = ref.watch(authControllerProvider);
     final authController = ref.read(authControllerProvider.notifier);
 
+    // Watch onboarding data
+    final onboardingState = ref.watch(onboardingProvider);
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
@@ -30,8 +34,8 @@ class RegisterScreen extends HookConsumerWidget {
     // Listen to auth state changes
     ref.listen(authControllerProvider, (previous, next) {
       if (next.isAuthenticated) {
-        // Navigate to dashboard on successful registration
-        context.go('/dashboard');
+        // Navigate to home/dashboard on successful registration
+        context.go('/home');
       }
     });
 
@@ -71,16 +75,52 @@ class RegisterScreen extends HookConsumerWidget {
         return;
       }
 
-      final success = await authController.register(
-        name: nameController.text.trim(),
-        email: emailController.text.trim(),
-        password: passwordController.text,
-        birthDate: birthDate.value,
-        agreedToTerms: agreedToTerms.value,
-      );
+      // Check if we have onboarding data
+      final onboardingState = ref.read(onboardingProvider);
+      final hasOnboardingData =
+          onboardingState.birthData != null &&
+          onboardingState.preferences != null;
 
-      if (!success && context.mounted) {
-        _showErrorDialog(context, authState.error ?? 'Registration failed');
+      bool success = false;
+
+      if (hasOnboardingData) {
+        // Use onboarding provider for registration with profile data
+        try {
+          final onboardingNotifier = ref.read(onboardingProvider.notifier);
+          await onboardingNotifier.completeRegistration(
+            email: emailController.text.trim(),
+            password: passwordController.text,
+            firstName: nameController.text.trim().split(' ').first,
+            lastName:
+                nameController.text.trim().split(' ').length > 1
+                    ? nameController.text.trim().split(' ').last
+                    : null,
+          );
+          success = true;
+        } catch (e) {
+          if (context.mounted) {
+            _showErrorDialog(context, 'Registration failed: ${e.toString()}');
+          }
+          return;
+        }
+      } else {
+        // Use regular auth controller registration
+        success = await authController.register(
+          name: nameController.text.trim(),
+          email: emailController.text.trim(),
+          password: passwordController.text,
+          birthDate: birthDate.value,
+          agreedToTerms: agreedToTerms.value,
+        );
+
+        if (!success && context.mounted) {
+          _showErrorDialog(context, authState.error ?? 'Registration failed');
+        }
+      }
+
+      // Navigate to dashboard on success
+      if (success && context.mounted) {
+        context.go('/dashboard');
       }
     }
 
@@ -157,9 +197,13 @@ class RegisterScreen extends HookConsumerWidget {
                       ),
                     ),
                     child: ClipOval(
-                      child: Image.asset(
-                        'assets/images/login-illustration.png',
-                        fit: BoxFit.cover,
+                      child: Container(
+                        color: Colors.grey.withOpacity(0.3),
+                        child: const Icon(
+                          Icons.person,
+                          size: 40,
+                          color: Colors.white70,
+                        ),
                       ),
                     ),
                   ),
@@ -184,6 +228,58 @@ class RegisterScreen extends HookConsumerWidget {
                   ),
 
                   const SizedBox(height: 40),
+
+                  // Debug info for onboarding data
+                  if (onboardingState.birthData != null ||
+                      onboardingState.preferences != null)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.only(bottom: 24),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: colorScheme.primary.withOpacity(0.1),
+                        border: Border.all(
+                          color: colorScheme.primary.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Onboarding Data Found!',
+                            style: textTheme.titleSmall?.copyWith(
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (onboardingState.birthData != null) ...[
+                            Text(
+                              'Birth Date: ${onboardingState.birthData!.birthDate.day}/${onboardingState.birthData!.birthDate.month}/${onboardingState.birthData!.birthDate.year}',
+                              style: textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurface.withOpacity(0.8),
+                              ),
+                            ),
+                            if (onboardingState.birthData!.zodiacSign != null)
+                              Text(
+                                'Zodiac: ${onboardingState.birthData!.zodiacSign}',
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: colorScheme.onSurface.withOpacity(0.8),
+                                ),
+                              ),
+                          ],
+                          if (onboardingState.preferences != null)
+                            Text(
+                              'Preferences: ${onboardingState.preferences!.tone}',
+                              style: textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurface.withOpacity(0.8),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
 
                   // Registration Form
                   Container(

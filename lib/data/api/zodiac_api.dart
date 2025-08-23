@@ -47,11 +47,16 @@ class ZodiacApi {
     }
   }
 
-  Future<void> logout() async {
+  Future<void> logout([String? refreshToken]) async {
     try {
-      await _client.post('/api/auth/logout');
+      final data =
+          refreshToken != null
+              ? {'refreshToken': refreshToken}
+              : <String, dynamic>{};
+      await _client.post('/api/auth/logout', data: data);
     } catch (e) {
-      rethrow;
+      // Don't rethrow logout errors - local logout should always succeed
+      print('⚠️ Server logout error (continuing with local logout): $e');
     }
   }
 }

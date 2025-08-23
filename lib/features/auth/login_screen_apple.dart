@@ -46,9 +46,15 @@ class LoginScreen extends HookConsumerWidget {
                     Container(
                       width: 200,
                       height: 200,
-                      child: Image.asset(
-                        'assets/images/login-illustration.png',
-                        fit: BoxFit.contain,
+                      child: ClipOval(
+                        child: Container(
+                          color: Colors.grey.withOpacity(0.3),
+                          child: const Icon(
+                            Icons.person,
+                            size: 40,
+                            color: Colors.white70,
+                          ),
+                        ),
                       ),
                     ),
 

@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'config/environment.dart';
 import 'app/router.dart';
-import 'app/theme/app_theme.dart';
+import 'presentation/theme/app_theme.dart';
 import 'features/auth/providers/auth_controller.dart';
 
 /// Environment configuration
@@ -48,9 +49,10 @@ class ZodiacNumerologyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
 
-    // Initialize auth on app startup
+    // Initialize auth on app startup - but don't force redirects
     ref.listen(authControllerProvider, (previous, next) {
-      // Handle auth state changes if needed
+      // Handle auth state changes if needed but don't redirect during onboarding
+      debugPrint('🔐 Auth state changed: $previous -> $next');
     });
 
     return MaterialApp.router(
@@ -59,12 +61,8 @@ class ZodiacNumerologyApp extends ConsumerWidget {
       // Theme configuration - Auto detect system theme
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system, // Auto-detect system theme
-      // Router configuration
+      themeMode: ThemeMode.system,
       routerConfig: router,
-
-      // Localization
-      supportedLocales: const [Locale('en', 'US'), Locale('ro', 'RO')],
     );
   }
 }

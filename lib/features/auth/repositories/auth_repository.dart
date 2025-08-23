@@ -104,15 +104,31 @@ class AuthRepository {
       final responseData = await _api.register(requestData);
 
       // Parse the server response structure
+      print('🔍 Full response data: $responseData');
       final userData = responseData['data']['user'];
       final tokensData = responseData['data']['tokens'];
 
+      print('🔍 User data: $userData');
+      print('🔍 Tokens data: $tokensData');
+
       // Create AuthResponse object manually from the server response
+      final accessToken = tokensData['accessToken'] as String;
+
+      // Handle refreshToken - it can be a String or an Object with token field
+      String refreshToken = '';
+      final refreshTokenData = tokensData['refreshToken'];
+      if (refreshTokenData is String) {
+        refreshToken = refreshTokenData;
+      } else if (refreshTokenData is Map<String, dynamic> &&
+          refreshTokenData['token'] != null) {
+        refreshToken = refreshTokenData['token'] as String;
+      }
+
       final authResponse = AuthResponse(
-        accessToken: tokensData['accessToken'] as String,
-        refreshToken: tokensData['refreshToken'] as String,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
         user: User.fromJson(userData),
-        tokenType: tokensData['tokenType'] as String?,
+        tokenType: tokensData['tokenType'] as String? ?? 'Bearer',
       );
 
       // Store tokens securely
@@ -167,18 +183,24 @@ class AuthRepository {
   /// Logout user
   Future<void> logout() async {
     try {
+      // Get refresh token for server logout
+      final refreshToken = await getRefreshToken();
+
       // Try to logout on server with a timeout
-      await _api.logout().timeout(
-        const Duration(seconds: 5),
-        onTimeout: () {
-          // Timeout - continue with local logout
-          return {};
-        },
-      );
+      await _api
+          .logout(refreshToken)
+          .timeout(
+            const Duration(seconds: 5),
+            onTimeout: () {
+              // Timeout - continue with local logout
+              print('⚠️ Logout server timeout - continuing with local logout');
+              return;
+            },
+          );
     } catch (e) {
       // Continue with local logout even if server request fails
       // This ensures the user can always logout locally
-      print('Server logout failed (continuing with local logout): $e');
+      print('⚠️ Server logout failed (continuing with local logout): $e');
     }
 
     // Always clear all stored data regardless of server response
@@ -235,10 +257,18 @@ class AuthRepository {
 
   /// Store tokens securely
   Future<void> _storeTokens(String accessToken, String refreshToken) async {
-    await Future.wait([
+    final futures = <Future<void>>[
       SecureStorageService.write(key: _accessTokenKey, value: accessToken),
-      SecureStorageService.write(key: _refreshTokenKey, value: refreshToken),
-    ]);
+    ];
+
+    // Only store refresh token if it's not empty
+    if (refreshToken.isNotEmpty) {
+      futures.add(
+        SecureStorageService.write(key: _refreshTokenKey, value: refreshToken),
+      );
+    }
+
+    await Future.wait(futures);
   }
 
   /// Clear all stored authentication data

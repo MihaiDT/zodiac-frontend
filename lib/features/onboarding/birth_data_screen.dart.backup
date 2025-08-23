@@ -1,0 +1,952 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
+import 'dart:ui';
+import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../config/app_colors.dart';
+import '../../core/services/haptics_service.dart';
+import '../../core/models/onboarding_models.dart';
+import 'providers/onboarding_provider.dart';
+import 'widgets/progress_indicator.dart';
+
+class BirthDataScreen extends ConsumerStatefulWidget {
+  const BirthDataScreen({super.key});
+
+  @override
+  ConsumerState<BirthDataScreen> createState() {
+    print('🎂 BirthDataScreen createState called');
+    return _BirthDataScreenState();
+  }
+}
+
+class _BirthDataScreenState extends ConsumerState<BirthDataScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _starsController;
+  late AnimationController _pulseController;
+
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
+  String? _selectedPlace;
+
+  // Loading state
+  bool _isLoading = false;
+
+  // Results from horoscope teaser
+  String? _zodiacSign;
+  String? _moonSign;
+  String? _ascendantSign;
+  bool _showResults = false;
+
+  @override
+  void initState() {
+    super.initState();
+    print('🎂 BirthDataScreen initState called');
+    _initAnimations();
+  }
+
+  void _initAnimations() {
+    _starsController = AnimationController(
+      duration: const Duration(seconds: 4),
+      vsync: this,
+    )..repeat();
+
+    _pulseController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _starsController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectDate() async {
+    final DateTime initialDate = _selectedDate ?? DateTime(1990, 1, 1);
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.5), // Simple overlay instead of blur
+      isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
+      useSafeArea: true,
+      builder:
+          (context) => _CustomDatePicker(
+            initialDate: initialDate,
+            onDateSelected: (date) {
+              setState(() {
+                _selectedDate = date;
+              });
+              HapticsService.lightImpact();
+            },
+          ),
+    );
+  }
+
+  Future<void> _selectTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime ?? const TimeOfDay(hour: 12, minute: 0),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: AppColors.primary,
+              surface: AppColors.cardBackgroundDark,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _selectedTime = picked;
+      });
+      HapticsService.lightImpact();
+    }
+  }
+
+  Future<void> _submitBirthData() async {
+    if (_selectedDate == null) {
+      _showErrorSnackBar('Please select your birth date');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      HapticsService.mediumImpact();
+
+      // Calculate zodiac sign locally
+      _zodiacSign = _getMockZodiacSign(_selectedDate!);
+      _moonSign = _getMockMoonSign(_selectedDate!);
+      _ascendantSign =
+          _selectedTime != null ? _getMockAscendant(_selectedTime!) : 'Unknown';
+
+      // Save birth data to onboarding provider
+      final birthData = BirthData(
+        birthDate: _selectedDate!,
+        birthTime: _selectedTime?.format(context),
+        birthPlace: _selectedPlace,
+        zodiacSign: _zodiacSign,
+      );
+
+      ref.read(onboardingProvider.notifier).setBirthData(birthData);
+
+      setState(() {
+        _showResults = true;
+        _isLoading = false;
+      });
+
+      HapticsService.heavyImpact();
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      _showErrorSnackBar('Something went wrong. Please try again.');
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  // Mock data methods for fallback
+  String _getMockZodiacSign(DateTime birthDate) {
+    final month = birthDate.month;
+    final day = birthDate.day;
+
+    if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) return 'Aries';
+    if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) return 'Taurus';
+    if ((month == 5 && day >= 21) || (month == 6 && day <= 20)) return 'Gemini';
+    if ((month == 6 && day >= 21) || (month == 7 && day <= 22)) return 'Cancer';
+    if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) return 'Leo';
+    if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) return 'Virgo';
+    if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) return 'Libra';
+    if ((month == 10 && day >= 23) || (month == 11 && day <= 21))
+      return 'Scorpio';
+    if ((month == 11 && day >= 22) || (month == 12 && day <= 21))
+      return 'Sagittarius';
+    if ((month == 12 && day >= 22) || (month == 1 && day <= 19))
+      return 'Capricorn';
+    if ((month == 1 && day >= 20) || (month == 2 && day <= 18))
+      return 'Aquarius';
+    return 'Pisces';
+  }
+
+  String _getMockMoonSign(DateTime birthDate) {
+    final signs = [
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
+    ];
+
+    // Simple mock based on birth date
+    final index = (birthDate.day + birthDate.month) % signs.length;
+    return signs[index];
+  }
+
+  String _getMockAscendant(TimeOfDay birthTime) {
+    final signs = [
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
+    ];
+
+    // Simple mock based on birth time
+    final hourIndex =
+        (birthTime.hour * 2 + birthTime.minute ~/ 30) % signs.length;
+    return signs[hourIndex];
+  }
+
+  void _navigateToNext() {
+    HapticsService.lightImpact();
+    context.go('/onboarding/intent');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: AppColors.getBackgroundGradient(isDarkMode),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              children: [
+                // Header with back button
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => context.go('/'),
+                      child: const Icon(
+                        Icons.arrow_back_ios,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const Expanded(
+                      child: Center(
+                        child: OnboardingProgressIndicator(
+                          currentStep: 1,
+                          totalSteps: 5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 24,
+                    ), // Same width as back button for balance
+                  ],
+                ),
+
+                const SizedBox(height: 40),
+
+                if (!_showResults) ...[
+                  // Birth data collection
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          // Title
+                          Text(
+                            'Tell us about\nyourself',
+                            style: const TextStyle(
+                              fontFamily: 'Playfair Display',
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 32,
+                              height: 1.2,
+                              letterSpacing: 0.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          Text(
+                            'Your birth details help us create your personalized cosmic profile',
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              color: const Color(0xFFF5F5F5),
+                              fontSize: 16,
+                              height: 1.5,
+                              fontWeight: FontWeight.normal,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+
+                          const SizedBox(height: 48),
+
+                          // Birth Date (Required)
+                          _buildInputCard(
+                            title: 'Birth Date',
+                            subtitle: 'Required',
+                            value:
+                                _selectedDate != null
+                                    ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
+                                    : null,
+                            placeholder: 'Select your birth date',
+                            onTap: _selectDate,
+                            isRequired: true,
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Birth Time (Optional)
+                          _buildInputCard(
+                            title: 'Birth Time',
+                            subtitle: 'Optional for better accuracy',
+                            value:
+                                _selectedTime != null
+                                    ? _selectedTime!.format(context)
+                                    : null,
+                            placeholder: 'Select birth time',
+                            onTap: _selectTime,
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Birth Place (Optional)
+                          _buildInputCard(
+                            title: 'Birth Place',
+                            subtitle: 'Optional for rising sign',
+                            value: _selectedPlace,
+                            placeholder: 'Enter city, country',
+                            onTap: () {
+                              // TODO: Implement place picker
+                              HapticsService.lightImpact();
+                            },
+                          ),
+
+                          const SizedBox(height: 40),
+                        ],
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  // Results display
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Success animation placeholder
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: AppColors.ctaPrimary,
+                          ),
+                          child: const Icon(
+                            Icons.stars,
+                            color: Colors.white,
+                            size: 60,
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        Text(
+                          'Your Cosmic Profile',
+                          style: const TextStyle(
+                            fontFamily: 'Playfair Display',
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 28,
+                            letterSpacing: 0.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // Signs display
+                        _buildSignCard('Sun Sign', _zodiacSign ?? 'Unknown'),
+                        const SizedBox(height: 16),
+                        _buildSignCard('Moon Sign', _moonSign ?? 'Unknown'),
+                        const SizedBox(height: 16),
+                        _buildSignCard(
+                          'Rising Sign',
+                          _ascendantSign ?? 'Unknown',
+                        ),
+
+                        const SizedBox(height: 40),
+                      ],
+                    ),
+                  ),
+                ],
+
+                // Continue button
+                Container(
+                  width: double.infinity,
+                  height: 56,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: ElevatedButton(
+                    onPressed:
+                        _isLoading
+                            ? null
+                            : _showResults
+                            ? _navigateToNext
+                            : _submitBirthData,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white.withOpacity(0.15),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                    ),
+                    child:
+                        _isLoading
+                            ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                            : Text(
+                              _showResults ? 'Continue' : 'Create Profile',
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInputCard({
+    required String title,
+    required String subtitle,
+    String? value,
+    required String placeholder,
+    required VoidCallback onTap,
+    bool isRequired = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.white.withOpacity(0.1),
+          border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (isRequired) ...[
+                  const SizedBox(width: 4),
+                  const Text(
+                    '*',
+                    style: TextStyle(
+                      color: AppColors.error,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontFamily: 'Inter',
+                color: Colors.white.withOpacity(0.6),
+                fontSize: 12,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              value ?? placeholder,
+              style: TextStyle(
+                fontFamily: 'Inter',
+                color:
+                    value != null
+                        ? Colors.white
+                        : Colors.white.withOpacity(0.5),
+                fontSize: 16,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignCard(String label, String sign) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.white.withOpacity(0.1),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Inter',
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 16,
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+          Text(
+            sign,
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomDatePicker extends StatefulWidget {
+  final DateTime initialDate;
+  final Function(DateTime) onDateSelected;
+
+  const _CustomDatePicker({
+    required this.initialDate,
+    required this.onDateSelected,
+  });
+
+  @override
+  State<_CustomDatePicker> createState() => _CustomDatePickerState();
+}
+
+class _CustomDatePickerState extends State<_CustomDatePicker> {
+  late FixedExtentScrollController _dayController;
+  late FixedExtentScrollController _monthController;
+  late FixedExtentScrollController _yearController;
+
+  late int _selectedDay;
+  late int _selectedMonth;
+  late int _selectedYear;
+
+  final List<String> _months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDay = widget.initialDate.day;
+    _selectedMonth = widget.initialDate.month;
+    _selectedYear = widget.initialDate.year;
+
+    _dayController = FixedExtentScrollController(initialItem: _selectedDay - 1);
+    _monthController = FixedExtentScrollController(
+      initialItem: _selectedMonth - 1,
+    );
+    _yearController = FixedExtentScrollController(
+      initialItem: _selectedYear - 1900,
+    );
+  }
+
+  @override
+  void dispose() {
+    _dayController.dispose();
+    _monthController.dispose();
+    _yearController.dispose();
+    super.dispose();
+  }
+
+  int _getDaysInMonth(int year, int month) {
+    return DateTime(year, month + 1, 0).day;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textPrimary =
+        isDark ? const Color(0xFFF2E6EE) : const Color(0xFF0600AB);
+    final textSecondary =
+        isDark ? const Color(0xB3FFFFFF) : const Color(0xB3977DFF);
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.45,
+      decoration: BoxDecoration(
+        // Optimized glass effect - no BackdropFilter
+        color: Colors.white.withOpacity(isDark ? 0.2 : 0.3),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border.all(
+          color: Colors.white.withOpacity(isDark ? 0.3 : 0.4),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.1),
+            blurRadius: 15,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: Stack(
+          children: [
+            // Simplified glass overlay
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withOpacity(isDark ? 0.05 : 0.1),
+                    Colors.transparent,
+                  ],
+                ),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+            ),
+
+            Column(
+              children: [
+                // Drag handle
+                Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+
+                // Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: textSecondary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        'Select Birth Date',
+                        style: TextStyle(
+                          color: textPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Inter',
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          final selectedDate = DateTime(
+                            _selectedYear,
+                            _selectedMonth,
+                            _selectedDay,
+                          );
+                          widget.onDateSelected(selectedDate);
+                          Navigator.pop(context);
+                        },
+                        child: Text(
+                          'Done',
+                          style: TextStyle(
+                            color: textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Inter',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Date Pickers
+                Expanded(
+                  child: Row(
+                    children: [
+                      // Day picker
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Text(
+                                'Day',
+                                style: TextStyle(
+                                  color: textSecondary,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: CupertinoPicker(
+                                scrollController: _dayController,
+                                itemExtent: 50,
+                                diameterRatio: 1.2,
+                                squeeze: 1.1,
+                                onSelectedItemChanged: (index) {
+                                  setState(() {
+                                    _selectedDay = index + 1;
+                                    final maxDays = _getDaysInMonth(
+                                      _selectedYear,
+                                      _selectedMonth,
+                                    );
+                                    if (_selectedDay > maxDays) {
+                                      _selectedDay = maxDays;
+                                    }
+                                  });
+                                },
+                                children: List.generate(31, (index) {
+                                  final day = index + 1;
+                                  final maxDays = _getDaysInMonth(
+                                    _selectedYear,
+                                    _selectedMonth,
+                                  );
+                                  return Center(
+                                    child: Text(
+                                      day.toString().padLeft(2, '0'),
+                                      style: TextStyle(
+                                        color:
+                                            day <= maxDays
+                                                ? textPrimary
+                                                : textSecondary.withOpacity(
+                                                  0.3,
+                                                ),
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: 'Inter',
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Month picker
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Text(
+                                'Month',
+                                style: TextStyle(
+                                  color: textSecondary,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: CupertinoPicker(
+                                scrollController: _monthController,
+                                itemExtent: 50,
+                                diameterRatio: 1.2,
+                                squeeze: 1.1,
+                                onSelectedItemChanged: (index) {
+                                  setState(() {
+                                    _selectedMonth = index + 1;
+                                    final maxDays = _getDaysInMonth(
+                                      _selectedYear,
+                                      _selectedMonth,
+                                    );
+                                    if (_selectedDay > maxDays) {
+                                      _selectedDay = maxDays;
+                                      _dayController.animateToItem(
+                                        _selectedDay - 1,
+                                        duration: const Duration(
+                                          milliseconds: 200,
+                                        ),
+                                        curve: Curves.easeOut,
+                                      );
+                                    }
+                                  });
+                                },
+                                children:
+                                    _months.map((month) {
+                                      return Center(
+                                        child: Text(
+                                          month,
+                                          style: TextStyle(
+                                            color: textPrimary,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                            fontFamily: 'Inter',
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Year picker
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Text(
+                                'Year',
+                                style: TextStyle(
+                                  color: textSecondary,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: CupertinoPicker(
+                                scrollController: _yearController,
+                                itemExtent: 50,
+                                diameterRatio: 1.2,
+                                squeeze: 1.1,
+                                onSelectedItemChanged: (index) {
+                                  setState(() {
+                                    _selectedYear = 1900 + index;
+                                    final maxDays = _getDaysInMonth(
+                                      _selectedYear,
+                                      _selectedMonth,
+                                    );
+                                    if (_selectedDay > maxDays) {
+                                      _selectedDay = maxDays;
+                                      _dayController.animateToItem(
+                                        _selectedDay - 1,
+                                        duration: const Duration(
+                                          milliseconds: 200,
+                                        ),
+                                        curve: Curves.easeOut,
+                                      );
+                                    }
+                                  });
+                                },
+                                children: List.generate(126, (index) {
+                                  final year = 1900 + index;
+                                  return Center(
+                                    child: Text(
+                                      year.toString(),
+                                      style: TextStyle(
+                                        color: textPrimary,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: 'Inter',
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

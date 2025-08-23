@@ -1,11 +1,11 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
 #include "Generated.xcconfig"
 
-// Configure for iOS Simulator - NO CODE SIGNING
-CODE_SIGNING_ALLOWED = NO
-CODE_SIGNING_REQUIRED = NO
-CODE_SIGN_IDENTITY = 
-CODE_SIGN_STYLE = Manual
+// Configure for iOS Development - ENABLE CODE SIGNING
+CODE_SIGNING_ALLOWED = YES
+CODE_SIGNING_REQUIRED = YES
+CODE_SIGN_IDENTITY = Apple Development
+CODE_SIGN_STYLE = Automatic
 DEVELOPMENT_TEAM = 
 PROVISIONING_PROFILE_SPECIFIER = 
 
@@ -17,10 +17,10 @@ COMPILER_INDEX_STORE_ENABLE = NO
 DEBUG_INFORMATION_FORMAT = dwarf
 ENABLE_TESTABILITY = YES
 
-// Additional simulator-specific settings
+// Device deployment settings
 ONLY_ACTIVE_ARCH = YES
 EXCLUDED_ARCHS[sdk=iphonesimulator*] = arm64
 
-// Skip code signing steps
-SKIP_INSTALL = YES
+// Enable proper installation for device
+SKIP_INSTALL = NO
 STRIP_INSTALLED_PRODUCT = NO

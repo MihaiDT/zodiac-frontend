@@ -24,12 +24,18 @@ mixin _$User {
   String get id => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
+  String? get displayName => throw _privateConstructorUsedError;
+  String? get firstName => throw _privateConstructorUsedError;
+  String? get lastName => throw _privateConstructorUsedError;
   String? get avatar => throw _privateConstructorUsedError;
   DateTime? get birthDate => throw _privateConstructorUsedError;
   String? get zodiacSign => throw _privateConstructorUsedError;
   String? get lifePath => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
+  bool? get emailVerified => throw _privateConstructorUsedError;
+  String? get accountStatus => throw _privateConstructorUsedError;
+  DateTime? get lastLoginAt => throw _privateConstructorUsedError;
 
   /// Serializes this User to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -49,12 +55,18 @@ abstract class $UserCopyWith<$Res> {
     String id,
     String email,
     String name,
+    String? displayName,
+    String? firstName,
+    String? lastName,
     String? avatar,
     DateTime? birthDate,
     String? zodiacSign,
     String? lifePath,
     DateTime? createdAt,
     DateTime? updatedAt,
+    bool? emailVerified,
+    String? accountStatus,
+    DateTime? lastLoginAt,
   });
 }
 
@@ -76,12 +88,18 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
     Object? id = null,
     Object? email = null,
     Object? name = null,
+    Object? displayName = freezed,
+    Object? firstName = freezed,
+    Object? lastName = freezed,
     Object? avatar = freezed,
     Object? birthDate = freezed,
     Object? zodiacSign = freezed,
     Object? lifePath = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
+    Object? emailVerified = freezed,
+    Object? accountStatus = freezed,
+    Object? lastLoginAt = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -100,6 +118,21 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
                     ? _value.name
                     : name // ignore: cast_nullable_to_non_nullable
                         as String,
+            displayName:
+                freezed == displayName
+                    ? _value.displayName
+                    : displayName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            firstName:
+                freezed == firstName
+                    ? _value.firstName
+                    : firstName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            lastName:
+                freezed == lastName
+                    ? _value.lastName
+                    : lastName // ignore: cast_nullable_to_non_nullable
+                        as String?,
             avatar:
                 freezed == avatar
                     ? _value.avatar
@@ -130,6 +163,21 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
                     ? _value.updatedAt
                     : updatedAt // ignore: cast_nullable_to_non_nullable
                         as DateTime?,
+            emailVerified:
+                freezed == emailVerified
+                    ? _value.emailVerified
+                    : emailVerified // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            accountStatus:
+                freezed == accountStatus
+                    ? _value.accountStatus
+                    : accountStatus // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            lastLoginAt:
+                freezed == lastLoginAt
+                    ? _value.lastLoginAt
+                    : lastLoginAt // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
           )
           as $Val,
     );
@@ -148,12 +196,18 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
     String id,
     String email,
     String name,
+    String? displayName,
+    String? firstName,
+    String? lastName,
     String? avatar,
     DateTime? birthDate,
     String? zodiacSign,
     String? lifePath,
     DateTime? createdAt,
     DateTime? updatedAt,
+    bool? emailVerified,
+    String? accountStatus,
+    DateTime? lastLoginAt,
   });
 }
 
@@ -172,12 +226,18 @@ class __$$UserImplCopyWithImpl<$Res>
     Object? id = null,
     Object? email = null,
     Object? name = null,
+    Object? displayName = freezed,
+    Object? firstName = freezed,
+    Object? lastName = freezed,
     Object? avatar = freezed,
     Object? birthDate = freezed,
     Object? zodiacSign = freezed,
     Object? lifePath = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
+    Object? emailVerified = freezed,
+    Object? accountStatus = freezed,
+    Object? lastLoginAt = freezed,
   }) {
     return _then(
       _$UserImpl(
@@ -196,6 +256,21 @@ class __$$UserImplCopyWithImpl<$Res>
                 ? _value.name
                 : name // ignore: cast_nullable_to_non_nullable
                     as String,
+        displayName:
+            freezed == displayName
+                ? _value.displayName
+                : displayName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        firstName:
+            freezed == firstName
+                ? _value.firstName
+                : firstName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        lastName:
+            freezed == lastName
+                ? _value.lastName
+                : lastName // ignore: cast_nullable_to_non_nullable
+                    as String?,
         avatar:
             freezed == avatar
                 ? _value.avatar
@@ -226,6 +301,21 @@ class __$$UserImplCopyWithImpl<$Res>
                 ? _value.updatedAt
                 : updatedAt // ignore: cast_nullable_to_non_nullable
                     as DateTime?,
+        emailVerified:
+            freezed == emailVerified
+                ? _value.emailVerified
+                : emailVerified // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        accountStatus:
+            freezed == accountStatus
+                ? _value.accountStatus
+                : accountStatus // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        lastLoginAt:
+            freezed == lastLoginAt
+                ? _value.lastLoginAt
+                : lastLoginAt // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
       ),
     );
   }
@@ -238,12 +328,18 @@ class _$UserImpl implements _User {
     required this.id,
     required this.email,
     required this.name,
+    this.displayName,
+    this.firstName,
+    this.lastName,
     this.avatar,
     this.birthDate,
     this.zodiacSign,
     this.lifePath,
     this.createdAt,
     this.updatedAt,
+    this.emailVerified,
+    this.accountStatus,
+    this.lastLoginAt,
   });
 
   factory _$UserImpl.fromJson(Map<String, dynamic> json) =>
@@ -256,6 +352,12 @@ class _$UserImpl implements _User {
   @override
   final String name;
   @override
+  final String? displayName;
+  @override
+  final String? firstName;
+  @override
+  final String? lastName;
+  @override
   final String? avatar;
   @override
   final DateTime? birthDate;
@@ -267,10 +369,16 @@ class _$UserImpl implements _User {
   final DateTime? createdAt;
   @override
   final DateTime? updatedAt;
+  @override
+  final bool? emailVerified;
+  @override
+  final String? accountStatus;
+  @override
+  final DateTime? lastLoginAt;
 
   @override
   String toString() {
-    return 'User(id: $id, email: $email, name: $name, avatar: $avatar, birthDate: $birthDate, zodiacSign: $zodiacSign, lifePath: $lifePath, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'User(id: $id, email: $email, name: $name, displayName: $displayName, firstName: $firstName, lastName: $lastName, avatar: $avatar, birthDate: $birthDate, zodiacSign: $zodiacSign, lifePath: $lifePath, createdAt: $createdAt, updatedAt: $updatedAt, emailVerified: $emailVerified, accountStatus: $accountStatus, lastLoginAt: $lastLoginAt)';
   }
 
   @override
@@ -281,6 +389,12 @@ class _$UserImpl implements _User {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.email, email) || other.email == email) &&
             (identical(other.name, name) || other.name == name) &&
+            (identical(other.displayName, displayName) ||
+                other.displayName == displayName) &&
+            (identical(other.firstName, firstName) ||
+                other.firstName == firstName) &&
+            (identical(other.lastName, lastName) ||
+                other.lastName == lastName) &&
             (identical(other.avatar, avatar) || other.avatar == avatar) &&
             (identical(other.birthDate, birthDate) ||
                 other.birthDate == birthDate) &&
@@ -291,7 +405,13 @@ class _$UserImpl implements _User {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+                other.updatedAt == updatedAt) &&
+            (identical(other.emailVerified, emailVerified) ||
+                other.emailVerified == emailVerified) &&
+            (identical(other.accountStatus, accountStatus) ||
+                other.accountStatus == accountStatus) &&
+            (identical(other.lastLoginAt, lastLoginAt) ||
+                other.lastLoginAt == lastLoginAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -301,12 +421,18 @@ class _$UserImpl implements _User {
     id,
     email,
     name,
+    displayName,
+    firstName,
+    lastName,
     avatar,
     birthDate,
     zodiacSign,
     lifePath,
     createdAt,
     updatedAt,
+    emailVerified,
+    accountStatus,
+    lastLoginAt,
   );
 
   /// Create a copy of User
@@ -328,12 +454,18 @@ abstract class _User implements User {
     required final String id,
     required final String email,
     required final String name,
+    final String? displayName,
+    final String? firstName,
+    final String? lastName,
     final String? avatar,
     final DateTime? birthDate,
     final String? zodiacSign,
     final String? lifePath,
     final DateTime? createdAt,
     final DateTime? updatedAt,
+    final bool? emailVerified,
+    final String? accountStatus,
+    final DateTime? lastLoginAt,
   }) = _$UserImpl;
 
   factory _User.fromJson(Map<String, dynamic> json) = _$UserImpl.fromJson;
@@ -344,6 +476,12 @@ abstract class _User implements User {
   String get email;
   @override
   String get name;
+  @override
+  String? get displayName;
+  @override
+  String? get firstName;
+  @override
+  String? get lastName;
   @override
   String? get avatar;
   @override
@@ -356,6 +494,12 @@ abstract class _User implements User {
   DateTime? get createdAt;
   @override
   DateTime? get updatedAt;
+  @override
+  bool? get emailVerified;
+  @override
+  String? get accountStatus;
+  @override
+  DateTime? get lastLoginAt;
 
   /// Create a copy of User
   /// with the given fields replaced by the non-null parameter values.
