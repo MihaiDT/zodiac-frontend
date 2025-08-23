@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -56,15 +57,26 @@ class ZodiacNumerologyApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Zodiac & Numerology',
       debugShowCheckedModeBanner: false, // Hide debug banner
+      
       // Theme configuration
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.dark, // Default to dark mode
+      
       // Router configuration
       routerConfig: router,
 
-      // Localization
-      supportedLocales: const [Locale('en', 'US'), Locale('ro', 'RO')],
+      // Localization configuration - acest fix rezolvă erorile roșii! 🎯
+      supportedLocales: const [
+        Locale('en', 'US'),
+        Locale('ro', 'RO'),
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      locale: const Locale('en', 'US'), // Force English to avoid Romanian issues
     );
   }
 }

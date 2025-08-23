@@ -13,6 +13,8 @@ import '../features/zodiac/zodiac_screen.dart';
 import '../features/zodiac/zodiac_sign_detail_screen.dart';
 import '../features/numerology/numerology_screen.dart';
 import '../features/horoscope/horoscope_screen.dart';
+import '../features/chat/chat_screen.dart';
+import '../config/environment.dart';
 
 /// App Router configuration using GoRouter
 class AppRouter {
@@ -84,6 +86,11 @@ class AppRouter {
               builder: (context, state) => const HoroscopeScreen(),
             ),
             GoRoute(
+              path: '/chat',
+              name: 'chat',
+              builder: (context, state) => const ChatScreen(),
+            ),
+            GoRoute(
               path: '/profile',
               name: 'profile',
               builder: (context, state) => const ProfileManagementScreen(),
@@ -130,6 +137,17 @@ class AppRouter {
           return null;
         }
 
+        // In development mode, allow access to protected routes without authentication
+        if (Environment.buildFlavor == 'development') {
+          // If authenticated and on auth/onboarding routes, redirect to dashboard
+          if (isAuthenticated && (isLoginRoute || isGetStartedRoute)) {
+            return '/dashboard';
+          }
+          // Allow access to all routes in development
+          return null;
+        }
+
+        // Production authentication logic
         // If not authenticated and trying to access protected routes, redirect to get started
         if (!isAuthenticated && !isLoginRoute && !isGetStartedRoute) {
           return '/get-started';
