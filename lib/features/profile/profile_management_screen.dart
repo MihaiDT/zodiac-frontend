@@ -780,42 +780,14 @@ class ProfileManagementScreen extends HookConsumerWidget {
         // Perform logout
         await ref.read(authControllerProvider.notifier).logout();
 
-        // Dismiss loading dialog
-        if (context.mounted) {
-          Navigator.of(context).pop();
-        }
-
-        // Navigate to login
+        // Navigate to login (this will dismiss all dialogs automatically)
         if (context.mounted) {
           context.go('/login');
         }
       } catch (e) {
-        // Dismiss loading dialog if still showing
+        // Navigate to login immediately (logout happened locally)
         if (context.mounted) {
-          Navigator.of(context).pop();
-        }
-
-        // Show error (but logout still happened locally)
-        if (context.mounted) {
-          showCupertinoDialog(
-            context: context,
-            builder:
-                (context) => CupertinoAlertDialog(
-                  title: const Text('Logout Complete'),
-                  content: const Text(
-                    'You have been logged out locally. Network issues prevented server logout.',
-                  ),
-                  actions: [
-                    CupertinoDialogAction(
-                      child: const Text('OK'),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        context.go('/login');
-                      },
-                    ),
-                  ],
-                ),
-          );
+          context.go('/login');
         }
       }
     }

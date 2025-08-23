@@ -3,6 +3,7 @@ import 'package:flutter/services.dart'; // For haptic feedback
 import 'package:go_router/go_router.dart';
 import 'dart:math' as math;
 import '../../config/app_colors.dart';
+import '../../core/services/haptics_service.dart';
 
 // Premium Haptic Feedback Helper Class
 class PremiumHaptics {
@@ -439,7 +440,7 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                                       child: GestureDetector(
                                         onTap: () {
                                           // Light haptic feedback for zodiac interactions
-                                          PremiumHaptics.light();
+                                          HapticsService.lightImpact();
                                           // Future: Add zodiac detail navigation
                                         },
                                         child: Container(
@@ -623,8 +624,14 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                       child: ElevatedButton(
                         onPressed: () {
                           // Premium haptic feedback for primary CTA
-                          PremiumHaptics.medium();
-                          context.go('/login');
+                          print('Get Started button pressed!'); // Debug
+                          HapticsService.mediumImpact();
+                          print(
+                            'Navigating to /onboarding/birth-data',
+                          ); // Debug
+
+                          // Simple navigation without auth interference
+                          context.go('/onboarding/birth-data');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
@@ -656,7 +663,7 @@ class _GetStartedScreenState extends State<GetStartedScreen>
                     TextButton(
                       onPressed: () {
                         // Light haptic feedback for secondary actions
-                        PremiumHaptics.light();
+                        HapticsService.lightImpact();
                         context.go('/login');
                       },
                       child: RichText(

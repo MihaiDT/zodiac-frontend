@@ -6,6 +6,11 @@ import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/auth/providers/auth_controller.dart';
 import '../features/onboarding/get_started_screen.dart';
+import '../features/onboarding/birth_data_screen.dart';
+import '../features/onboarding/intent_screen.dart';
+import '../features/onboarding/first_tarot_draw_screen.dart';
+import '../features/onboarding/daily_promise_screen.dart';
+import '../features/onboarding/streak_intro_screen.dart';
 import '../features/profile/profile_management_screen.dart';
 import '../presentation/shell/app_shell.dart';
 import '../features/common/screens/dashboard_screen.dart';
@@ -19,6 +24,7 @@ import '../config/environment.dart';
 /// App Router configuration using GoRouter
 class AppRouter {
   static GoRouter createRouter(Ref ref) {
+    debugPrint('🚀 Creating AppRouter...');
     return GoRouter(
       initialLocation: '/get-started', // Start with get started screen
       debugLogDiagnostics: true,
@@ -29,6 +35,36 @@ class AppRouter {
           path: '/get-started',
           name: 'get-started',
           builder: (context, state) => const GetStartedScreen(),
+        ),
+
+        // Onboarding flow routes
+        GoRoute(
+          path: '/onboarding/birth-data',
+          name: 'onboarding-birth-data',
+          builder: (context, state) {
+            print('🎂 Building BirthDataScreen...');
+            return const BirthDataScreen();
+          },
+        ),
+        GoRoute(
+          path: '/onboarding/intent',
+          name: 'onboarding-intent',
+          builder: (context, state) => const IntentScreen(),
+        ),
+        GoRoute(
+          path: '/onboarding/tarot',
+          name: 'onboarding-tarot',
+          builder: (context, state) => const FirstTarotDrawScreen(),
+        ),
+        GoRoute(
+          path: '/onboarding/daily-promise',
+          name: 'onboarding-daily-promise',
+          builder: (context, state) => const DailyPromiseScreen(),
+        ),
+        GoRoute(
+          path: '/onboarding/streak-intro',
+          name: 'onboarding-streak-intro',
+          builder: (context, state) => const StreakIntroScreen(),
         ),
 
         // Authentication routes (no shell)
@@ -131,6 +167,8 @@ class AppRouter {
         final isLoginRoute =
             state.fullPath?.startsWith('/login') == true ||
             state.fullPath?.startsWith('/register') == true;
+        final isOnboardingRoute =
+            state.fullPath?.startsWith('/onboarding') == true;
 
         // Don't redirect while authentication is loading
         if (isLoading) {
@@ -149,7 +187,10 @@ class AppRouter {
 
         // Production authentication logic
         // If not authenticated and trying to access protected routes, redirect to get started
-        if (!isAuthenticated && !isLoginRoute && !isGetStartedRoute) {
+        if (!isAuthenticated &&
+            !isLoginRoute &&
+            !isGetStartedRoute &&
+            !isOnboardingRoute) {
           return '/get-started';
         }
 
