@@ -183,11 +183,6 @@ _$ProfileUpdateRequestImpl _$$ProfileUpdateRequestImplFromJson(
   birthTime: json['birthTime'] as String?,
   birthPlace: json['birthPlace'] as String?,
   zodiacSign: json['zodiacSign'] as String?,
-  selectedIntents:
-      (json['selectedIntents'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList() ??
-      const [],
 );
 
 Map<String, dynamic> _$$ProfileUpdateRequestImplToJson(
@@ -200,7 +195,6 @@ Map<String, dynamic> _$$ProfileUpdateRequestImplToJson(
   'birthTime': instance.birthTime,
   'birthPlace': instance.birthPlace,
   'zodiacSign': instance.zodiacSign,
-  'selectedIntents': instance.selectedIntents,
 };
 
 _$NotificationSettingsImpl _$$NotificationSettingsImplFromJson(

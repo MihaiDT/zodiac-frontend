@@ -41,7 +41,7 @@ class AuthService {
     required String name,
   }) async {
     final response = await _apiService.post(
-      '/api/v1/auth/register',
+      '/api/auth/register',
       body: {'email': email, 'password': password, 'name': name},
     );
 
@@ -58,7 +58,7 @@ class AuthService {
     required String password,
   }) async {
     final response = await _apiService.post(
-      '/api/v1/auth/login',
+      '/api/auth/login',
       body: {'email': email, 'password': password},
     );
 
@@ -73,7 +73,7 @@ class AuthService {
   Future<void> logout() async {
     if (_accessToken != null) {
       try {
-        await _apiService.post('/api/v1/auth/logout', token: _accessToken);
+        await _apiService.post('/api/auth/logout', token: _accessToken);
       } catch (e) {
         print('Error during logout: $e');
       }
@@ -88,7 +88,7 @@ class AuthService {
 
     try {
       final response = await _apiService.post(
-        '/api/v1/auth/refresh',
+        '/api/auth/refresh',
         body: {'refreshToken': _refreshToken},
       );
 
@@ -107,7 +107,7 @@ class AuthService {
   Future<void> _loadUserProfile() async {
     try {
       final response = await _apiService.get(
-        '/api/v1/auth/profile',
+        '/api/auth/me',
         token: _accessToken,
       );
 
@@ -133,6 +133,13 @@ class AuthService {
     _userProfile = null;
 
     await _storageService.clearTokens();
+  }
+
+  /// Set tokens manually for testing/development
+  Future<void> setTokensManually(String accessToken, [String? refreshToken]) async {
+    await _saveTokens(accessToken, refreshToken ?? '');
+    // Load user profile if possible
+    await _loadUserProfile();
   }
 
   /// Google OAuth login

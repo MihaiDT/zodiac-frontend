@@ -4,8 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
+import '../../config/app_colors.dart';
+import '../../core/services/haptics_service.dart';
+import '../../data/models/chat_models.dart';
+import 'providers/chat_provider.dart';
+import '../auth/providers/auth_controller.dart';
 
-/// Ultra Premium Apple iOS 18 style chat screen - Absolutely mind-blowing design! 🤯✨💫
+/// Ultra Premium Apple iOS 18 style chat screen - Clean minimal design!
 class ChatScreen extends HookConsumerWidget {
   const ChatScreen({super.key});
 
@@ -14,29 +20,182 @@ class ChatScreen extends HookConsumerWidget {
     final scrollController = useScrollController();
     final messageController = useTextEditingController();
     final focusNode = useFocusNode();
-    final isTyping = useState(false);
-    final showSuggestions = useState(true);
     final keyboardHeight = useState(0.0);
     
-    // Premium predefined questions
+    // Watch chat state from providers
+    final chatState = ref.watch(chatProvider);
+    final messages = ref.watch(chatMessagesProvider);
+    final isTyping = ref.watch(isTypingProvider);
+    final chatError = ref.watch(chatErrorProvider);
+    final stats = ref.watch(chatStatsProvider);
+    
+    // Premium predefined questions with proper tones
     final suggestions = [
-      "What's my zodiac compatibility?",
-      "Tell me about my numerology",
-      "What do the stars say today?",
-      "Calculate my life path number",
-      "What's my rising sign?",
-      "Moon phase meanings",
+      {"text": "What's my zodiac compatibility?", "tone": ChatTone.mystical},
+      {"text": "Tell me about my numerology", "tone": ChatTone.professional},
+      {"text": "What do the stars say today?", "tone": ChatTone.friendly},
+      {"text": "Calculate my life path number", "tone": ChatTone.professional},
+      {"text": "What's my rising sign?", "tone": ChatTone.mystical},
+      {"text": "Moon phase meanings", "tone": ChatTone.casual},
     ];
     
-    // Mock messages for beautiful demo
-    final messages = useState([
-      ChatMessage(
-        id: '1',
-        text: 'Hello! I\'m your personal cosmic guide ✨ How can I help you explore the mysteries of the universe today?',
-        isFromUser: false,
-        timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-      ),
-    ]);
+    final showSuggestions = useState(messages.isEmpty);
+
+    // Show authentication dialog function
+    void showAuthDialog({required bool isLogin}) {
+      final emailController = TextEditingController();
+      final passwordController = TextEditingController();
+      final nameController = TextEditingController();
+
+      Widget buildTextField(TextEditingController controller, String hint, IconData icon, {bool isPassword = false}) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[800]?.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+          ),
+          child: TextField(
+            controller: controller,
+            obscureText: isPassword,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+              prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.7)),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+        );
+      }
+
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) => Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            margin: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.grey[900]?.withOpacity(0.95),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isLogin ? 'Login' : 'Register',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                
+                // Name field (only for register)
+                if (!isLogin) ...[
+                  buildTextField(nameController, 'Name', Icons.person),
+                  const SizedBox(height: 16),
+                ],
+                
+                // Email field
+                buildTextField(emailController, 'Email', Icons.email),
+                const SizedBox(height: 16),
+                
+                // Password field
+                buildTextField(passwordController, 'Password', Icons.lock, isPassword: true),
+                const SizedBox(height: 24),
+                
+                // Action buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.grey.withOpacity(0.2),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final authController = ref.read(authControllerProvider.notifier);
+                          
+                          try {
+                            if (isLogin) {
+                              await authController.login(
+                                emailController.text.trim(),
+                                passwordController.text,
+                              );
+                            } else {
+                              await authController.register(
+                                email: emailController.text.trim(),
+                                password: passwordController.text,
+                                name: nameController.text.trim(),
+                              );
+                            }
+                            
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(isLogin ? 'Login successful!' : 'Registration successful!'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error: ${e.toString()}'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isLogin ? Colors.blue : Colors.green,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          isLogin ? 'Login' : 'Register',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     // Ultra smooth scroll to bottom with Apple-like animation
     void scrollToBottom() {
@@ -80,236 +239,101 @@ class ChatScreen extends HookConsumerWidget {
       return () => focusNode.removeListener(onFocusChange);
     }, [focusNode]);
 
-    return Theme(
-      data: Theme.of(context).copyWith(
-        // Ensure proper dark theme
-        scaffoldBackgroundColor: Colors.transparent,
-        appBarTheme: const AppBarTheme(
-          systemOverlayStyle: SystemUiOverlayStyle.light,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        extendBodyBehindAppBar: false,
-        extendBody: false,
-        resizeToAvoidBottomInset: true,
-        appBar: _buildUltraPremiumAppBar(context),
-        body: Container(
-          // Solid black background - elimină orice overlay
-          color: Colors.black,
-          child: Column(
-            children: [
-              // Messages area with perfect responsive design - using full screen
-              Expanded(
-                child: _buildUltraPremiumMessagesArea(
-                  messages.value, 
-                  scrollController, 
-                  suggestions, 
-                  showSuggestions.value,
-                  (suggestion) => _sendMessage(suggestion, messageController, messages, scrollController, showSuggestions),
-                ),
-              ),
-              
-              // Ultra premium input area with perfect keyboard handling
-              _buildUltraPremiumInputArea(
-                context,
-                messageController,
-                focusNode,
-                isTyping,
-                messages,
-                scrollController,
-                showSuggestions,
-                keyboardHeight.value,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  PreferredSizeWidget _buildUltraPremiumAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: Colors.black, // Solid black background
-      elevation: 0,
-      systemOverlayStyle: SystemUiOverlayStyle.light,
-      toolbarHeight: 70, // Header mai mic
-      automaticallyImplyLeading: false,
-      flexibleSpace: Container(
-        decoration: const BoxDecoration(
-          color: Colors.black, // Solid black, no transparency
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 5, 20, 5), // Padding mult mai mic sus și jos
-            child: Row(
-              children: [
-                // Ultra premium back button cu dimensiuni mai mici
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.09),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.12),
-                      width: 0.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Clean minimal header with auth options
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () {
-                        HapticFeedback.mediumImpact();
-                        Navigator.of(context).pop();
-                      },
-                      child: const Icon(
-                        CupertinoIcons.chevron_left,
+                  const Expanded(
+                    child: Text(
+                      'Cosmic AI',
+                      style: TextStyle(
                         color: Colors.white,
-                        size: 20, // Icon mai mic
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  // Login button
+                  TextButton(
+                    onPressed: () => showAuthDialog(isLogin: true),
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.blue.withOpacity(0.2),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: Colors.blue.withOpacity(0.3)),
+                      ),
+                    ),
+                    child: const Text(
+                      'Login',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                ),
-                
-                const SizedBox(width: 16),
-                
-                // AI Avatar cu dimensiuni mai mici
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF667EEA),
-                        Color(0xFF764BA2),
-                        Color(0xFFf093fb),
-                        Color(0xFFf5576c),
-                      ],
+                  const SizedBox(width: 8),
+                  // Register button
+                  TextButton(
+                    onPressed: () => showAuthDialog(isLogin: false),
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.green.withOpacity(0.2),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: Colors.green.withOpacity(0.3)),
+                      ),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF667EEA).withOpacity(0.6),
-                        blurRadius: 25,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 6),
-                      ),
-                      BoxShadow(
-                        color: const Color(0xFFf093fb).withOpacity(0.4),
-                        blurRadius: 15,
-                        spreadRadius: 0,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    CupertinoIcons.sparkles,
-                    color: Colors.white,
-                    size: 22,
-                  ),
-                ),
-                
-                const SizedBox(width: 14),
-                
-                // Title and status with beautiful typography
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Cosmic AI',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 17, // Text mai mic
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.6,
-                          height: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 2), // Spațiu mai mic
-                      Row(
-                        children: [
-                          Container(
-                            width: 9,
-                            height: 9,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF30D158),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF30D158).withOpacity(0.6),
-                                  blurRadius: 6,
-                                  spreadRadius: 1,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Always here for you',
-                            style: TextStyle(
-                              color: Color(0xFF8E8E93),
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: -0.2,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // Settings button mai mic
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.09),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.12),
-                      width: 0.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        // TODO: Add settings functionality
-                      },
-                      child: const Icon(
-                        CupertinoIcons.ellipsis,
-                        color: Colors.white,
-                        size: 18, // Icon mai mic
+                    child: const Text(
+                      'Register',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+
+            // Messages area
+            Expanded(
+              child: _buildUltraPremiumMessagesArea(
+                messages, 
+                scrollController, 
+                suggestions, 
+                showSuggestions.value,
+                chatError,
+                chatState,
+                (suggestion) => _sendMessage(suggestion, messageController, scrollController, showSuggestions, ref),
+                ref,
+              ),
+            ),
+            
+            // Input area
+            _buildUltraPremiumInputArea(
+              context,
+              messageController,
+              focusNode,
+              scrollController,
+              showSuggestions,
+              keyboardHeight.value,
+              ref,
+            ),
+          ],
         ),
       ),
     );
@@ -318,9 +342,12 @@ class ChatScreen extends HookConsumerWidget {
   Widget _buildUltraPremiumMessagesArea(
     List<ChatMessage> messages, 
     ScrollController scrollController,
-    List<String> suggestions,
+    List<Map<String, dynamic>> suggestions,
     bool showSuggestions,
-    Function(String) onSuggestionTap,
+    String? chatError,
+    ChatState chatState,
+    Function(dynamic) onSuggestionTap,
+    WidgetRef ref,
   ) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -335,6 +362,36 @@ class ChatScreen extends HookConsumerWidget {
               child: SizedBox(height: 10),
             ),
             
+            // Error display
+            if (chatError != null)
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.red.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          chatError,
+                          style: const TextStyle(color: Colors.red, fontSize: 14),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => ref.read(chatProvider.notifier).clearError(),
+                        child: const Text('Dismiss', style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            
             SliverPadding(
               padding: EdgeInsets.symmetric(
                 horizontal: constraints.maxWidth * 0.04,
@@ -343,22 +400,51 @@ class ChatScreen extends HookConsumerWidget {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final message = messages[index];
+                    // Filter out loading messages from the main chat view
+                    final visibleMessages = messages.where((msg) => !msg.isLoading).toList();
+                    final message = visibleMessages[index];
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 24),
-                      child: _UltraPremiumChatBubble(
-                        message: message,
-                        maxWidth: constraints.maxWidth,
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 0.0, end: 1.0),
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeOut,
+                        builder: (context, value, child) {
+                          return Transform.translate(
+                            offset: Offset(0, 20 * (1 - value)),
+                            child: Opacity(
+                              opacity: value,
+                              child: _UltraPremiumChatBubble(
+                                message: message,
+                                maxWidth: constraints.maxWidth,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     );
                   },
-                  childCount: messages.length,
+                  childCount: messages.where((msg) => !msg.isLoading).length,
                 ),
               ),
             ),
             
+            // Ultra premium loading indicator with smooth typing animation
+            // Shows when there's a loading message in the messages list
+            if (messages.any((msg) => msg.isLoading))
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Row(
+                    children: [
+                      const _CosmicTypingAnimation(),
+                    ],
+                  ),
+                ),
+              ),
+            
             // Ultra premium suggestions with perfect responsive design
-            if (showSuggestions && messages.length == 1)
+            if (showSuggestions && messages.isEmpty)
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(
                   constraints.maxWidth * 0.04,
@@ -386,8 +472,9 @@ class ChatScreen extends HookConsumerWidget {
                         spacing: 12,
                         runSpacing: 14,
                         children: suggestions.map((suggestion) {
+                          final text = suggestion['text'] as String;
                           return _UltraPremiumSuggestionChip(
-                            text: suggestion,
+                            text: text,
                             onTap: () => onSuggestionTap(suggestion),
                             maxWidth: constraints.maxWidth,
                           );
@@ -412,11 +499,10 @@ class ChatScreen extends HookConsumerWidget {
     BuildContext context,
     TextEditingController messageController,
     FocusNode focusNode,
-    ValueNotifier<bool> isTyping,
-    ValueNotifier<List<ChatMessage>> messages,
     ScrollController scrollController,
     ValueNotifier<bool> showSuggestions,
     double keyboardHeight,
+    WidgetRef ref,
   ) {
     final screenWidth = MediaQuery.of(context).size.width;
     
@@ -431,7 +517,7 @@ class ChatScreen extends HookConsumerWidget {
           5, // Aproape zero spațiu sub input
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Ultra responsive text input
             Expanded(
@@ -487,11 +573,11 @@ class ChatScreen extends HookConsumerWidget {
                     ),
                   ),
                   onChanged: (text) {
-                    isTyping.value = text.trim().isNotEmpty;
+                    // isTyping state is now managed by provider
                   },
                   onSubmitted: (text) {
                     if (text.trim().isNotEmpty) {
-                      _sendMessage(text, messageController, messages, scrollController, showSuggestions);
+                      _sendMessage(text, messageController, scrollController, showSuggestions, ref);
                     }
                   },
                 ),
@@ -501,9 +587,10 @@ class ChatScreen extends HookConsumerWidget {
             const SizedBox(width: 14),
             
             // Absolutely gorgeous send button
-            ValueListenableBuilder<bool>(
-              valueListenable: isTyping,
-              builder: (context, hasText, child) {
+            ValueListenableBuilder<TextEditingValue>(
+              valueListenable: messageController,
+              builder: (context, value, child) {
+                final hasText = value.text.trim().isNotEmpty;
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 250),
                   curve: Curves.easeInOutCubic,
@@ -557,10 +644,14 @@ class ChatScreen extends HookConsumerWidget {
                       borderRadius: BorderRadius.circular(27),
                       onTap: hasText
                           ? () {
+                              print('🚨 SEND BUTTON TAPPED');
                               final text = messageController.text.trim();
+                              print('🚨 TEXT TO SEND: "$text"');
                               if (text.isNotEmpty) {
                                 HapticFeedback.mediumImpact();
-                                _sendMessage(text, messageController, messages, scrollController, showSuggestions);
+                                _sendMessage(text, messageController, scrollController, showSuggestions, ref);
+                              } else {
+                                print('🚨 TEXT IS EMPTY');
                               }
                             }
                           : null,
@@ -581,24 +672,37 @@ class ChatScreen extends HookConsumerWidget {
   }
 
   void _sendMessage(
-    String text,
+    dynamic suggestion,
     TextEditingController controller,
-    ValueNotifier<List<ChatMessage>> messages,
     ScrollController scrollController,
     ValueNotifier<bool> showSuggestions,
-  ) {
+    WidgetRef ref,
+  ) async {
+    print('🔥🔥🔥 _sendMessage FUNCTION CALLED!');
+    debugPrint('🔥 _sendMessage called with: $suggestion');
     HapticFeedback.lightImpact();
     
-    final newMessage = ChatMessage(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      text: text,
-      isFromUser: true,
-      timestamp: DateTime.now(),
-    );
-
-    messages.value = [...messages.value, newMessage];
+    String text;
+    ChatTone tone = ChatTone.friendly;
+    
+    // Handle both string suggestions and map suggestions with tone
+    if (suggestion is Map<String, dynamic>) {
+      text = suggestion['text'] as String;
+      tone = suggestion['tone'] as ChatTone;
+    } else {
+      text = suggestion.toString();
+    }
+    
     controller.clear();
     showSuggestions.value = false;
+
+    debugPrint('🚀 About to send message via provider: $text with tone: $tone');
+
+    // Send message via provider
+    await ref.read(chatProvider.notifier).sendMessage(
+      message: text,
+      tone: tone,
+    );
 
     // Ultra smooth scroll to bottom
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -610,57 +714,8 @@ class ChatScreen extends HookConsumerWidget {
         );
       }
     });
-
-    // Simulate AI response with realistic delay and typing indicator
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      final aiResponse = ChatMessage(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        text: _getIntelligentAIResponse(text),
-        isFromUser: false,
-        timestamp: DateTime.now(),
-      );
-
-      messages.value = [...messages.value, aiResponse];
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (scrollController.hasClients) {
-          scrollController.animateTo(
-            scrollController.position.maxScrollExtent + 100,
-            duration: const Duration(milliseconds: 350),
-            curve: Curves.easeOutCubic,
-          );
-        }
-      });
-    });
   }
-
-  String _getIntelligentAIResponse(String userMessage) {
-    final lowerMessage = userMessage.toLowerCase();
-    
-    if (lowerMessage.contains('zodiac') || lowerMessage.contains('sign')) {
-      return '✨ Your zodiac sign holds incredible cosmic energy! The stars have been aligning beautifully for your sign lately. What\'s your birth date? I can provide you with personalized insights about your celestial blueprint.';
-    } else if (lowerMessage.contains('numerology') || lowerMessage.contains('number')) {
-      return '🔢 Numerology reveals the hidden mathematical patterns in your life! Your life path number can unlock secrets about your destiny. Would you like me to calculate your personal numerology chart?';
-    } else if (lowerMessage.contains('compatibility')) {
-      return '💫 Cosmic compatibility is fascinating! The universe creates beautiful connections between souls. Tell me your sign and your partner\'s sign, and I\'ll reveal the celestial dynamics between you two.';
-    } else if (lowerMessage.contains('today') || lowerMessage.contains('horoscope')) {
-      return '🌟 Today\'s cosmic energy is particularly powerful! The planetary alignments are creating opportunities for growth and manifestation. Your intuition is especially heightened right now.';
-    } else if (lowerMessage.contains('moon')) {
-      return '� The moon\'s energy profoundly influences our emotions and intuition. Currently, the lunar phase is perfect for inner reflection and spiritual growth. Are you feeling its pull?';
-    } else if (lowerMessage.contains('rising') || lowerMessage.contains('ascendant')) {
-      return '🌅 Your rising sign is your cosmic mask - how the world sees you! It\'s the energy you project and your natural approach to life. I\'d need your exact birth time and location to calculate this precisely.';
-    } else {
-      const responses = [
-        '✨ The universe is whispering beautiful secrets to me about your journey. Every question you ask opens new doorways to cosmic understanding.',
-        '🌟 What a profound inquiry! The celestial energies are swirling around your curiosity, ready to reveal deeper truths about your path.',
-        '💫 I sense powerful spiritual energy in your question. The cosmos is eager to share its wisdom with someone as open as you are.',
-        '🔮 Your soul is seeking answers that the stars are ready to provide. Let me divine the cosmic guidance meant specifically for you.',
-        '🌙 The mystical forces are particularly strong right now. Your timing for this question is absolutely perfect - the universe is listening.',
-      ];
-      
-      return responses[DateTime.now().millisecond % responses.length];
-    }
-  }
+  
 }
 
 class _UltraPremiumChatBubble extends StatelessWidget {
@@ -849,16 +904,156 @@ class _UltraPremiumSuggestionChip extends StatelessWidget {
   }
 }
 
-class ChatMessage {
-  final String id;
-  final String text;
-  final bool isFromUser;
-  final DateTime timestamp;
+/// Ultra premium cosmic typing animation with floating dots
+class _CosmicTypingAnimation extends StatefulWidget {
+  const _CosmicTypingAnimation({Key? key}) : super(key: key);
 
-  ChatMessage({
-    required this.id,
-    required this.text,
-    required this.isFromUser,
-    required this.timestamp,
-  });
+  @override
+  State<_CosmicTypingAnimation> createState() => _CosmicTypingAnimationState();
+}
+
+class _CosmicTypingAnimationState extends State<_CosmicTypingAnimation>
+    with TickerProviderStateMixin {
+  late AnimationController _controller1;
+  late AnimationController _controller2;
+  late AnimationController _controller3;
+  late Animation<double> _animation1;
+  late Animation<double> _animation2;
+  late Animation<double> _animation3;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Create three controllers for smooth wave animation
+    _controller1 = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _controller2 = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _controller3 = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    // Create smooth, subtle animations (like professional loading dots)
+    _animation1 = Tween<double>(begin: 0.0, end: -4.0).animate(
+      CurvedAnimation(parent: _controller1, curve: Curves.easeInOut),
+    );
+    _animation2 = Tween<double>(begin: 0.0, end: -4.0).animate(
+      CurvedAnimation(parent: _controller2, curve: Curves.easeInOut),
+    );
+    _animation3 = Tween<double>(begin: 0.0, end: -4.0).animate(
+      CurvedAnimation(parent: _controller3, curve: Curves.easeInOut),
+    );
+
+    // Start staggered animation
+    _startAnimation();
+  }
+
+  void _startAnimation() async {
+    while (mounted) {
+      // Sequential wave: A 2-A (MIDDLE dot - controller2)
+      if (mounted) {
+        await _controller2.forward();
+        await _controller2.reverse();
+      }
+      
+      // Smooth pause before next dot
+      await Future.delayed(const Duration(milliseconds: 150));
+      
+      // A 3-A (RIGHT dot - controller3)
+      if (mounted) {
+        await _controller3.forward();
+        await _controller3.reverse();
+      }
+      
+      // Smooth pause before next dot
+      await Future.delayed(const Duration(milliseconds: 150));
+      
+      // PRIMA (LEFT dot - controller1)
+      if (mounted) {
+        await _controller1.forward();
+        await _controller1.reverse();
+      }
+      
+      // Longer pause before restarting the wave for smoother flow
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller1.dispose();
+    _controller2.dispose();
+    _controller3.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // First dot
+        AnimatedBuilder(
+          animation: _animation1,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, -6 * _animation1.value),
+              child: Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.8),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(width: 6),
+        
+        // Second dot
+        AnimatedBuilder(
+          animation: _animation2,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, -6 * _animation2.value),
+              child: Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.8),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(width: 6),
+        
+        // Third dot
+        AnimatedBuilder(
+          animation: _animation3,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, -6 * _animation3.value),
+              child: Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.8),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
 }

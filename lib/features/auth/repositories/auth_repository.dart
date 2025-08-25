@@ -207,6 +207,35 @@ class AuthRepository {
     await _clearStoredData();
   }
 
+  /// Get current user information from API
+  Future<User?> getCurrentUser() async {
+    try {
+      final token = await getAccessToken();
+      if (token == null) {
+        print('❌ No access token available');
+        return null;
+      }
+
+      print('🔍 Fetching current user from API...');
+      final responseData = await _api.getProfile();
+      
+      // Parse response based on API structure
+      final data = responseData['data'];
+      if (data == null) {
+        print('❌ No user data in response');
+        return null;
+      }
+
+      final user = User.fromJson(data);
+      print('✅ Current user fetched successfully: ${user.email}');
+      
+      return user;
+    } catch (e) {
+      print('❌ Error fetching current user: $e');
+      return null;
+    }
+  }
+
   /// Get stored access token
   Future<String?> getAccessToken() async {
     return await SecureStorageService.read(key: _accessTokenKey);
@@ -236,11 +265,25 @@ class AuthRepository {
   Future<User?> initializeAuth() async {
     try {
       final accessToken = await getAccessToken();
-      if (accessToken == null) return null;
+      if (accessToken == null) {
+        print('🔐 No access token found, user not authenticated');
+        return null;
+      }
 
+      print('🔐 Found access token, verifying with server...');
+      
       // Try to get current user from server
       final responseData = await _api.getProfile();
-      final user = User.fromJson(responseData['data']['user']);
+      final userData = responseData['data'];
+      
+      if (userData == null) {
+        print('❌ Invalid response from server, clearing tokens');
+        await _clearStoredData();
+        return null;
+      }
+      
+      final user = User.fromJson(userData);
+      print('✅ User verified successfully: ${user.email}');
 
       // Update stored user data
       await SecureStorageService.write(
@@ -250,8 +293,18 @@ class AuthRepository {
 
       return user;
     } catch (e) {
-      // If getting user fails, try with stored user data
-      return await getStoredUser();
+      print('❌ Auth verification failed: $e');
+      
+      // If server verification fails, clear invalid tokens
+      await _clearStoredData();
+      
+      // Try with stored user data as fallback (offline mode)
+      final storedUser = await getStoredUser();
+      if (storedUser != null) {
+        print('📱 Using offline stored user data');
+      }
+      
+      return storedUser;
     }
   }
 

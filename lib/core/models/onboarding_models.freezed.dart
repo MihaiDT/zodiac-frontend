@@ -2071,7 +2071,6 @@ mixin _$ProfileUpdateRequest {
   String? get birthTime => throw _privateConstructorUsedError;
   String? get birthPlace => throw _privateConstructorUsedError;
   String? get zodiacSign => throw _privateConstructorUsedError;
-  List<String> get selectedIntents => throw _privateConstructorUsedError;
 
   /// Serializes this ProfileUpdateRequest to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -2098,7 +2097,6 @@ abstract class $ProfileUpdateRequestCopyWith<$Res> {
     String? birthTime,
     String? birthPlace,
     String? zodiacSign,
-    List<String> selectedIntents,
   });
 
   $NotificationSettingsCopyWith<$Res> get notifications;
@@ -2129,7 +2127,6 @@ class _$ProfileUpdateRequestCopyWithImpl<
     Object? birthTime = freezed,
     Object? birthPlace = freezed,
     Object? zodiacSign = freezed,
-    Object? selectedIntents = null,
   }) {
     return _then(
       _value.copyWith(
@@ -2168,11 +2165,6 @@ class _$ProfileUpdateRequestCopyWithImpl<
                     ? _value.zodiacSign
                     : zodiacSign // ignore: cast_nullable_to_non_nullable
                         as String?,
-            selectedIntents:
-                null == selectedIntents
-                    ? _value.selectedIntents
-                    : selectedIntents // ignore: cast_nullable_to_non_nullable
-                        as List<String>,
           )
           as $Val,
     );
@@ -2206,7 +2198,6 @@ abstract class _$$ProfileUpdateRequestImplCopyWith<$Res>
     String? birthTime,
     String? birthPlace,
     String? zodiacSign,
-    List<String> selectedIntents,
   });
 
   @override
@@ -2234,7 +2225,6 @@ class __$$ProfileUpdateRequestImplCopyWithImpl<$Res>
     Object? birthTime = freezed,
     Object? birthPlace = freezed,
     Object? zodiacSign = freezed,
-    Object? selectedIntents = null,
   }) {
     return _then(
       _$ProfileUpdateRequestImpl(
@@ -2273,11 +2263,6 @@ class __$$ProfileUpdateRequestImplCopyWithImpl<$Res>
                 ? _value.zodiacSign
                 : zodiacSign // ignore: cast_nullable_to_non_nullable
                     as String?,
-        selectedIntents:
-            null == selectedIntents
-                ? _value._selectedIntents
-                : selectedIntents // ignore: cast_nullable_to_non_nullable
-                    as List<String>,
       ),
     );
   }
@@ -2294,8 +2279,7 @@ class _$ProfileUpdateRequestImpl implements _ProfileUpdateRequest {
     this.birthTime,
     this.birthPlace,
     this.zodiacSign,
-    final List<String> selectedIntents = const [],
-  }) : _selectedIntents = selectedIntents;
+  });
 
   factory _$ProfileUpdateRequestImpl.fromJson(Map<String, dynamic> json) =>
       _$$ProfileUpdateRequestImplFromJson(json);
@@ -2314,18 +2298,10 @@ class _$ProfileUpdateRequestImpl implements _ProfileUpdateRequest {
   final String? birthPlace;
   @override
   final String? zodiacSign;
-  final List<String> _selectedIntents;
-  @override
-  @JsonKey()
-  List<String> get selectedIntents {
-    if (_selectedIntents is EqualUnmodifiableListView) return _selectedIntents;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_selectedIntents);
-  }
 
   @override
   String toString() {
-    return 'ProfileUpdateRequest(tone: $tone, notifications: $notifications, timezone: $timezone, birthDate: $birthDate, birthTime: $birthTime, birthPlace: $birthPlace, zodiacSign: $zodiacSign, selectedIntents: $selectedIntents)';
+    return 'ProfileUpdateRequest(tone: $tone, notifications: $notifications, timezone: $timezone, birthDate: $birthDate, birthTime: $birthTime, birthPlace: $birthPlace, zodiacSign: $zodiacSign)';
   }
 
   @override
@@ -2345,11 +2321,7 @@ class _$ProfileUpdateRequestImpl implements _ProfileUpdateRequest {
             (identical(other.birthPlace, birthPlace) ||
                 other.birthPlace == birthPlace) &&
             (identical(other.zodiacSign, zodiacSign) ||
-                other.zodiacSign == zodiacSign) &&
-            const DeepCollectionEquality().equals(
-              other._selectedIntents,
-              _selectedIntents,
-            ));
+                other.zodiacSign == zodiacSign));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2363,7 +2335,6 @@ class _$ProfileUpdateRequestImpl implements _ProfileUpdateRequest {
     birthTime,
     birthPlace,
     zodiacSign,
-    const DeepCollectionEquality().hash(_selectedIntents),
   );
 
   /// Create a copy of ProfileUpdateRequest
@@ -2393,7 +2364,6 @@ abstract class _ProfileUpdateRequest implements ProfileUpdateRequest {
     final String? birthTime,
     final String? birthPlace,
     final String? zodiacSign,
-    final List<String> selectedIntents,
   }) = _$ProfileUpdateRequestImpl;
 
   factory _ProfileUpdateRequest.fromJson(Map<String, dynamic> json) =
@@ -2413,8 +2383,6 @@ abstract class _ProfileUpdateRequest implements ProfileUpdateRequest {
   String? get birthPlace;
   @override
   String? get zodiacSign;
-  @override
-  List<String> get selectedIntents;
 
   /// Create a copy of ProfileUpdateRequest
   /// with the given fields replaced by the non-null parameter values.

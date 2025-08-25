@@ -7,14 +7,14 @@ class ApiConfig {
   static String get baseUrl => Environment.apiBaseUrl;
 
   /// API endpoints
-  static const String _apiPrefix = '/api/v1';
+  static const String _apiPrefix = '/api';
 
   // Authentication endpoints
   static String get registerUrl => '$baseUrl$_apiPrefix/auth/register';
   static String get loginUrl => '$baseUrl$_apiPrefix/auth/login';
   static String get refreshUrl => '$baseUrl$_apiPrefix/auth/refresh';
   static String get logoutUrl => '$baseUrl$_apiPrefix/auth/logout';
-  static String get profileUrl => '$baseUrl$_apiPrefix/auth/profile';
+  static String get profileUrl => '$baseUrl$_apiPrefix/auth/me';
 
   // OAuth endpoints
   static String get googleOAuthUrl => '$baseUrl$_apiPrefix/auth/google';
